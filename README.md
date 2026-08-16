@@ -1,2 +1,2 @@
-# Odoo-x-LDCE-Team-X
+# teamX
 DEMO Aug 22
