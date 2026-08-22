@@ -16,7 +16,9 @@ export function SearchPage() {
   const [activities, setActivities] = useState<ApiActivity[]>([]);
   const [type, setType] = useState("all");
   const [maxCost, setMaxCost] = useState(200);
-  const [region, setRegion] = useState("all");
+  const [maxDuration, setMaxDuration] = useState(24);
+  const [selectedState, setSelectedState] = useState("all");
+  const [selectedCityId, setSelectedCityId] = useState<number | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
 
@@ -24,27 +26,36 @@ export function SearchPage() {
     setLoading(true);
     Promise.all([
       api.cities(),
+      tripId ? api.trip(tripId) : Promise.resolve(null),
       api.activities(`?${new URLSearchParams({
         ...(q ? { q } : {}),
         ...(type !== "all" ? { type: type.toLowerCase() } : {}),
-        maxCost: String(maxCost),
+        ...(maxCost > 200 ? { maxCost: String(maxCost) } : {}),
+        ...(maxDuration < 24 ? { maxDuration: String(maxDuration) } : {}),
+        ...(selectedCityId ? { cityId: String(selectedCityId) } : {}),
       })}`),
     ])
-      .then(([cityResponse, activityResponse]) => {
+      .then(([cityResponse, tripResponse, activityResponse]) => {
         setCities(cityResponse.cities);
+        const sectionCityId = tripResponse?.trip.sections.find((section) => section.sectionId === sectionId)?.cityId;
+        if (sectionCityId && selectedCityId !== sectionCityId) setSelectedCityId(sectionCityId);
         setActivities(activityResponse.activities);
       })
       .catch((requestError) => setError(requestError instanceof Error ? requestError.message : "Could not load search results."))
       .finally(() => setLoading(false));
-  }, [q, type, maxCost]);
+  }, [q, type, maxCost, maxDuration, selectedCityId, tripId, sectionId]);
 
-  const regions = useMemo(
+  const states = useMemo(
     () => [...new Set(cities.map((city) => city.region).filter((region): region is string => Boolean(region)))].sort(),
     [cities],
   );
+  const stateCities = useMemo(
+    () => cities.filter((city) => selectedState === "all" || city.region === selectedState),
+    [cities, selectedState],
+  );
   const visibleCities = useMemo(
-    () => cities.filter((city) => region === "all" || city.region === region),
-    [cities, region],
+    () => stateCities,
+    [stateCities],
   );
 
   const addCityToTrip = async (cityId: number) => {
@@ -94,10 +105,10 @@ export function SearchPage() {
       {loading ? <p className="muted">Loading live results...</p> : tab === "cities" ? (
         <div className="grid">
           <label style={{ maxWidth: 280 }}>
-            Filter by region
-            <select value={region} onChange={(event) => setRegion(event.target.value)}>
-              <option value="all">All regions</option>
-              {regions.map((item) => <option key={item} value={item}>{item}</option>)}
+            Select state
+            <select value={selectedState} onChange={(event) => setSelectedState(event.target.value)}>
+              <option value="all">All states</option>
+              {states.map((item) => <option key={item} value={item}>{item}</option>)}
             </select>
           </label>
           {visibleCities.map((city) => (
@@ -114,11 +125,26 @@ export function SearchPage() {
       ) : (
         <>
           <div className="tabs" style={{ marginBottom: 16 }}>
+            <label className="muted">State
+              <select value={selectedState} onChange={(event) => { setSelectedState(event.target.value); setSelectedCityId(null); }}>
+                <option value="all">All states</option>
+                {states.map((state) => <option key={state} value={state}>{state}</option>)}
+              </select>
+            </label>
+            <label className="muted">Stop / city
+              <select value={selectedCityId || ""} onChange={(event) => setSelectedCityId(Number(event.target.value) || null)}>
+                <option value="">Select a city</option>
+                {stateCities.map((city) => <option key={city.cityId} value={city.cityId}>{city.cityName}</option>)}
+              </select>
+            </label>
             {[["all", "All"], ["sightseeing", "Sightseeing"], ["food", "Food"], ["adventure", "Adventure"], ["other", "Other"]].map(([value, label]) => (
               <button key={value} className="chip" onClick={() => setType(value)}>{label}</button>
             ))}
-            <label className="muted">Max cost {maxCost === 200 ? "$200+" : `$${maxCost}`}
-              <input type="range" min={10} max={200} value={maxCost} onChange={(event) => setMaxCost(Number(event.target.value))} />
+            <label className="muted">Max cost {maxCost === 200 ? "No limit" : `INR ${maxCost}`}
+              <input type="range" min={200} max={10000} step={100} value={maxCost} onChange={(event) => setMaxCost(Number(event.target.value))} />
+            </label>
+            <label className="muted">Max duration {maxDuration === 24 ? "No limit" : `${maxDuration}h`}
+              <input type="range" min={1} max={24} value={maxDuration} onChange={(event) => setMaxDuration(Number(event.target.value))} />
             </label>
           </div>
           <div className="grid">

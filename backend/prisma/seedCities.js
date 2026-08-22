@@ -35,6 +35,20 @@ const data = [
       { name: "Lonavala", costIndex: 3.0, popularity: 83, activities: [{ name: "Tiger's Point Sunrise Trek", type: "adventure", estimatedCost: 400, description: "Take a scenic trek to a well-known Lonavala viewpoint." }, { name: "Bhushi Dam Visit", type: "sightseeing", estimatedCost: 100, description: "Visit the popular monsoon waterfall and picnic spot." }, { name: "Local Chikki Tasting Tour", type: "food", estimatedCost: 200, description: "Taste Lonavala's famous nut-and-jaggery chikki sweet." }] },
     ],
   },
+  {
+    state: "Gujarat",
+    cities: [
+      { name: "Ahmedabad", costIndex: 2.8, popularity: 88, activities: [{ name: "Sabarmati Ashram", type: "sightseeing", estimatedCost: 0, description: "Visit Gandhi's former riverside residence and museum." }, { name: "Ahmedabad Heritage Walk", type: "sightseeing", estimatedCost: 500, description: "Explore historic pols, monuments, and old-city architecture." }, { name: "Manek Chowk Night Food Walk", type: "food", estimatedCost: 400, description: "Taste Gujarati street food and late-night snacks at Manek Chowk." }, { name: "Adalaj Ni Vav Excursion", type: "sightseeing", estimatedCost: 200, description: "Visit the intricately carved stepwell near Ahmedabad." }] },
+      { name: "Surat", costIndex: 2.7, popularity: 78, activities: [{ name: "Surat Food Trail", type: "food", estimatedCost: 350, description: "Try locho, ghari, farsan, and other local Surat specialties." }, { name: "Dumas Beach Sunset", type: "sightseeing", estimatedCost: 0, description: "Enjoy an evening visit to Surat's popular coastal beach." }, { name: "Dutch Garden Visit", type: "sightseeing", estimatedCost: 0, description: "Explore Surat's historic cemetery garden and colonial heritage." }] },
+      { name: "Vadodara", costIndex: 2.6, popularity: 80, activities: [{ name: "Laxmi Vilas Palace", type: "sightseeing", estimatedCost: 250, description: "Tour Vadodara's grand palace and royal collection." }, { name: "Sayaji Garden Walk", type: "sightseeing", estimatedCost: 50, description: "Walk through the historic public garden in central Vadodara." }, { name: "Gujarati Thali Experience", type: "food", estimatedCost: 500, description: "Enjoy a traditional Gujarati thali with regional dishes." }] },
+    ],
+  },
+  {
+    state: "Delhi",
+    cities: [
+      { name: "Delhi", costIndex: 3.0, popularity: 96, activities: [{ name: "Red Fort Visit", type: "sightseeing", estimatedCost: 500, description: "Explore the Mughal-era Red Fort in Old Delhi." }, { name: "Humayun's Tomb", type: "sightseeing", estimatedCost: 500, description: "Visit the Mughal garden tomb and its surrounding grounds." }, { name: "India Gate Evening Walk", type: "sightseeing", estimatedCost: 0, description: "See the landmark war memorial and surrounding boulevard." }, { name: "Old Delhi Food Walk", type: "food", estimatedCost: 900, description: "Taste street food and traditional dishes in Old Delhi." }] },
+    ],
+  },
 ];
 
 async function main() {
