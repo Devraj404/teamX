@@ -9,6 +9,7 @@ export async function listCities(req, res) {
         ? {
             OR: [
               { cityName: { contains: q, mode: "insensitive" } },
+              { region: { contains: q, mode: "insensitive" } },
               { country: { contains: q, mode: "insensitive" } },
             ],
           }

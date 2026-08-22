@@ -30,7 +30,7 @@ export const seed: Database = {
       phone_number: "+1 415 555 0199",
       city: "San Francisco",
       country: "USA",
-      additional_information: "Platform steward for Globetrotter analytics and catalog quality.",
+      additional_information: "Platform steward for GlobeTrotter analytics and catalog quality.",
       role: "admin",
     },
     {

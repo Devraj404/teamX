@@ -15,6 +15,10 @@ export async function listActivities(req, res) {
             OR: [
               { activityName: { contains: q, mode: "insensitive" } },
               { description: { contains: q, mode: "insensitive" } },
+              { type: { contains: q, mode: "insensitive" } },
+              { city: { cityName: { contains: q, mode: "insensitive" } } },
+              { city: { region: { contains: q, mode: "insensitive" } } },
+              { city: { country: { contains: q, mode: "insensitive" } } },
             ],
           }
         : {}),

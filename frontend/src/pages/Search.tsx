@@ -2,8 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { api, type ApiActivity, type ApiCity } from "../api";
 import { Page3D } from "../components/Motion";
-
-const fallbackImage = "https://images.unsplash.com/photo-1500534623283-312aade485b7?auto=format&fit=crop&w=800&q=80";
+import { getActivityPhoto, getCityPhoto } from "../utils/images";
 
 export function SearchPage() {
   const [params, setParams] = useSearchParams();
@@ -12,6 +11,7 @@ export function SearchPage() {
   const tab = params.get("tab") || (params.get("section") ? "activities" : "cities");
   const tripId = Number(params.get("trip") || 0);
   const sectionId = Number(params.get("section") || 0);
+  const [allCities, setAllCities] = useState<ApiCity[]>([]);
   const [cities, setCities] = useState<ApiCity[]>([]);
   const [activities, setActivities] = useState<ApiActivity[]>([]);
   const [type, setType] = useState("all");
@@ -19,13 +19,19 @@ export function SearchPage() {
   const [maxDuration, setMaxDuration] = useState(24);
   const [selectedState, setSelectedState] = useState("all");
   const [selectedCityId, setSelectedCityId] = useState<number | null>(null);
+  const [searchInput, setSearchInput] = useState(q);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    setSearchInput(q);
+  }, [q]);
 
   useEffect(() => {
     setLoading(true);
     Promise.all([
       api.cities(),
+      api.cities(`?${new URLSearchParams({ ...(q ? { q } : {}) })}`),
       tripId ? api.trip(tripId) : Promise.resolve(null),
       api.activities(`?${new URLSearchParams({
         ...(q ? { q } : {}),
@@ -35,7 +41,8 @@ export function SearchPage() {
         ...(selectedCityId ? { cityId: String(selectedCityId) } : {}),
       })}`),
     ])
-      .then(([cityResponse, tripResponse, activityResponse]) => {
+      .then(([allCityRes, cityResponse, tripResponse, activityResponse]) => {
+        setAllCities(allCityRes.cities);
         setCities(cityResponse.cities);
         const sectionCityId = tripResponse?.trip.sections.find((section) => section.sectionId === sectionId)?.cityId;
         if (sectionCityId && selectedCityId !== sectionCityId) setSelectedCityId(sectionCityId);
@@ -46,8 +53,8 @@ export function SearchPage() {
   }, [q, type, maxCost, maxDuration, selectedCityId, tripId, sectionId]);
 
   const states = useMemo(
-    () => [...new Set(cities.map((city) => city.region).filter((region): region is string => Boolean(region)))].sort(),
-    [cities],
+    () => [...new Set(allCities.map((city) => city.region).filter((region): region is string => Boolean(region)))].sort(),
+    [allCities],
   );
   const stateCities = useMemo(
     () => cities.filter((city) => selectedState === "all" || city.region === selectedState),
@@ -90,17 +97,37 @@ export function SearchPage() {
     <Page3D>
       <h1>Search</h1>
       <p className="muted">Discover cities and activities from the live travel catalog.</p>
-      <div className="search-cluster" style={{ margin: "16px 0 20px" }}>
+      <form
+        className="search-cluster"
+        style={{ margin: "16px 0 20px" }}
+        onSubmit={(event) => {
+          event.preventDefault();
+          setParams({ ...Object.fromEntries(params), q: searchInput, tab });
+        }}
+      >
         <input
-          defaultValue={q}
-          placeholder="Search cities and activities..."
-          onKeyDown={(event) => {
-            if (event.key === "Enter") setParams({ ...Object.fromEntries(params), q: event.currentTarget.value, tab });
-          }}
+          value={searchInput}
+          onChange={(e) => setSearchInput(e.target.value)}
+          placeholder="Search by city, state (e.g. Rajasthan, Kerala), activity or keyword..."
         />
-        <button className="chip" onClick={() => setParams({ ...Object.fromEntries(params), tab: "cities" })}>Cities</button>
-        <button className="chip" onClick={() => setParams({ ...Object.fromEntries(params), tab: "activities" })}>Activities</button>
-      </div>
+        <button type="submit" className="btn" style={{ padding: "6px 16px" }}>Search</button>
+        {q && (
+          <button
+            type="button"
+            className="chip"
+            onClick={() => {
+              setSearchInput("");
+              const next = { ...Object.fromEntries(params) };
+              delete next.q;
+              setParams(next);
+            }}
+          >
+            Clear
+          </button>
+        )}
+        <button type="button" className={`chip ${tab === "cities" ? "active" : ""}`} onClick={() => setParams({ ...Object.fromEntries(params), tab: "cities" })}>Cities</button>
+        <button type="button" className={`chip ${tab === "activities" ? "active" : ""}`} onClick={() => setParams({ ...Object.fromEntries(params), tab: "activities" })}>Activities</button>
+      </form>
       {error && <div className="alert">{error}</div>}
       {loading ? <p className="muted">Loading live results...</p> : tab === "cities" ? (
         <div className="grid">
@@ -113,7 +140,7 @@ export function SearchPage() {
           </label>
           {visibleCities.map((city) => (
             <article key={city.cityId} className="card list-card">
-              <img src={fallbackImage} alt="" />
+              <img src={getCityPhoto(city.cityName)} alt={city.cityName} style={{ width: 100, height: 100, objectFit: "cover", borderRadius: 12 }} />
               <div>
                 <strong>{city.cityName}</strong>
                 <div className="muted">{city.country || ""} · {city.region || ""} · cost index {city.costIndex ?? "-"} · popularity {city.popularity ?? "-"}</div>
@@ -150,10 +177,10 @@ export function SearchPage() {
           <div className="grid">
             {activities.map((activity) => (
               <article key={activity.activityId} className="card list-card">
-                <img src={fallbackImage} alt="" />
+                <img src={getActivityPhoto(activity.type, activity.city?.cityName)} alt={activity.activityName} style={{ width: 100, height: 100, objectFit: "cover", borderRadius: 12 }} />
                 <div>
                   <strong>{activity.activityName}</strong>
-                  <div className="muted">{activity.city?.cityName || ""} · {activity.type} · {activity.duration ?? "-"}h · ${Number(activity.cost || 0).toFixed(2)}</div>
+                  <div className="muted">{activity.city?.cityName || ""} · {activity.type} · {activity.duration ?? "-"}h · ₹{Number(activity.cost || 0).toFixed(2)}</div>
                   <p>{activity.description}</p>
                 </div>
                 <button className="btn" onClick={() => addActivity(activity)}>Add / assign</button>

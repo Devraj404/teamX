@@ -326,6 +326,39 @@ async function main() {
     });
   }
 
+  // Ensure all existing trips in DB have valid HTTP coverPhoto URLs
+  const allTrips = await prisma.trip.findMany({
+    include: { sections: { include: { city: true } } },
+  });
+
+  const photoMap = {
+    jaipur: "https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&w=800&q=80",
+    udaipur: "https://images.unsplash.com/photo-1567157577867-05ccb1388e66?auto=format&fit=crop&w=800&q=80",
+    jodhpur: "https://images.unsplash.com/photo-1562979314-bee7453e911c?auto=format&fit=crop&w=800&q=80",
+    kochi: "https://images.unsplash.com/photo-1589556264800-08ae9e129a8c?auto=format&fit=crop&w=800&q=80",
+    munnar: "https://images.unsplash.com/photo-1506461883276-594a12b11cf3?auto=format&fit=crop&w=800&q=80",
+    alleppey: "https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&w=800&q=80",
+    mumbai: "https://images.unsplash.com/photo-1570168007204-dfb528c6958f?auto=format&fit=crop&w=800&q=80",
+    lonavala: "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=800&q=80",
+    ahmedabad: "https://images.unsplash.com/photo-1585822700511-b0e271bf1857?auto=format&fit=crop&w=800&q=80",
+    delhi: "https://images.unsplash.com/photo-1587474260584-136574528ed5?auto=format&fit=crop&w=800&q=80",
+    rajasthan: "https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&w=800&q=80",
+    kerala: "https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&w=800&q=80",
+    goa: "https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?auto=format&fit=crop&w=800&q=80",
+  };
+
+  for (const t of allTrips) {
+    if (!t.coverPhoto || !t.coverPhoto.startsWith("http")) {
+      const nameKey = (t.coverPhoto || t.tripName || "").toLowerCase();
+      const matchedCity = t.sections?.[0]?.city?.cityName?.toLowerCase();
+      const nextPhoto = photoMap[nameKey] || photoMap[matchedCity] || photoMap.rajasthan;
+      await prisma.trip.update({
+        where: { tripId: t.tripId },
+        data: { coverPhoto: nextPhoto },
+      });
+    }
+  }
+
   console.log(`Seed complete: ${cityCount} Indian cities, ${activityCount} catalog activities, demo users, sample trips with section dates, and community posts.`);
 }
 

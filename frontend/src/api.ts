@@ -136,7 +136,7 @@ export const api = {
   me: () => request<{ user: ApiUser }>("/auth/me", { auth: true }),
   updateMe: (payload: Record<string, unknown>) => request<{ user: ApiUser }>("/auth/me", { method: "PATCH", auth: true, body: JSON.stringify(payload) }),
   deleteMe: () => request<void>("/auth/me", { method: "DELETE", auth: true }),
-  cities: () => request<{ cities: ApiCity[] }>("/cities"),
+  cities: (query = "") => request<{ cities: ApiCity[] }>(`/cities${query}`),
   trips: () => request<{ trips: ApiTrip[] }>("/trips", { auth: true }),
   trip: (tripId: number) => request<{ trip: ApiTrip }>(`/trips/${tripId}`, { auth: true }),
   createTrip: (payload: Record<string, unknown>) =>

@@ -63,7 +63,7 @@ export function BuildItineraryPage() {
               <button className="chip" onClick={() => navigate(`/search?tab=activities&trip=${tripId}&section=${section.sectionId}`)}>Assign activities</button>
               <button className="chip" onClick={() => api.deleteSection(tripId, section.sectionId).then(() => setSections((current) => current.filter((item) => item.sectionId !== section.sectionId))).catch(() => setError("Could not remove stop."))}>Remove stop</button>
             </div>
-            <ul className="muted">{(section.sectionActivities || []).map((activity) => <li key={activity.sectionActivityId}>{activity.activityDate?.slice(0, 10) || ""}: {activity.activityName || "Activity"} · ${Number(activity.expense || 0).toFixed(2)}</li>)}</ul>
+            <ul className="muted">{(section.sectionActivities || []).map((activity) => <li key={activity.sectionActivityId}>{activity.activityDate?.slice(0, 10) || ""}: {activity.activityName || "Activity"} · ₹{Number(activity.expense || 0).toFixed(2)}</li>)}</ul>
           </article>
         ))}
       </div>

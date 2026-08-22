@@ -34,47 +34,45 @@ export function ProfilePage({ user, onChange }: { user: User; onChange: () => vo
 
   return (
     <Page3D>
-      <div style={{ display: "flex", gap: 20, alignItems: "center" }}>
+      <section className="profile-hero">
         <div className="avatar avatar-initial profile-initial" aria-label="Profile initial">
           {(user.first_name || user.username).slice(0, 1).toUpperCase()}
         </div>
-        <div>
-          <h1>User details</h1>
-          <p className="muted">
-            {user.first_name} {user.last_name} · {user.email}
-          </p>
+        <div className="profile-hero-copy">
+          <p className="eyebrow">Your travel profile</p>
+          <h1>{user.first_name || user.username}</h1>
+          <p className="muted">{user.email || "Add an email address"}</p>
         </div>
-      </div>
-      <form className="form wide" style={{ marginTop: 24 }} onSubmit={save}>
-        {error && <div className="alert">{error}</div>}
-        <div className="two">
-          <label>First name<input name="first_name" defaultValue={user.first_name} /></label>
-          <label>Last name<input name="last_name" defaultValue={user.last_name} /></label>
-          <label>Email<input name="email" defaultValue={user.email} /></label>
-          <label>Phone<input name="phone_number" defaultValue={user.phone_number} /></label>
-          <label>City<input name="city" defaultValue={user.city} /></label>
-          <label>Country<input name="country" defaultValue={user.country} /></label>
-        </div>
-        <label>
-          Language preference
-          <select value={lang} onChange={(e) => setLang(e.target.value)}>
-            <option>English</option>
-            <option>Hindi</option>
-            <option>French</option>
-            <option>Japanese</option>
-          </select>
-        </label>
-        <label>
-          Additional information
-          <textarea name="additional_information" defaultValue={user.additional_information} />
-        </label>
-        <button className="btn" type="submit">Save profile</button>
-      </form>
+      </section>
 
-      <h2 style={{ marginTop: 32 }}>Preplanned trips</h2>
+      <div className="profile-layout">
+        <form className="form wide profile-panel" onSubmit={save}>
+          <div className="panel-heading"><div><p className="eyebrow">Account</p><h2>Personal details</h2></div><span className="profile-status">Synced</span></div>
+          {error && <div className="alert">{error}</div>}
+          <div className="two">
+            <label>First name<input name="first_name" defaultValue={user.first_name} /></label>
+            <label>Last name<input name="last_name" defaultValue={user.last_name} /></label>
+            <label>Email<input name="email" type="email" defaultValue={user.email} /></label>
+            <label>Phone<input name="phone_number" defaultValue={user.phone_number} /></label>
+            <label>City<input name="city" defaultValue={user.city} /></label>
+            <label>Country<input name="country" defaultValue={user.country} /></label>
+          </div>
+          <label>Language preference<select value={lang} onChange={(e) => setLang(e.target.value)}><option>English</option><option>Hindi</option><option>French</option><option>Japanese</option></select></label>
+          <label>About your travel style<textarea name="additional_information" defaultValue={user.additional_information} placeholder="Languages, pace, accessibility notes..." /></label>
+          <button className="btn" type="submit">Save profile</button>
+        </form>
+
+        <aside className="profile-stats">
+          <div className="profile-stat"><strong>{trips.length}</strong><span>Total trips</span></div>
+          <div className="profile-stat"><strong>{planned.length}</strong><span>Upcoming</span></div>
+          <div className="profile-stat"><strong>{cities.length}</strong><span>Destinations</span></div>
+        </aside>
+      </div>
+
+      <div className="profile-section-heading"><div><p className="eyebrow">Keep moving</p><h2>Upcoming trips</h2></div><button className="chip" onClick={() => navigate("/trips/new")}>Plan a trip</button></div>
       <div className="row-scroll">
         {planned.map((t) => (
-          <TiltCard key={t.tripId}>
+          <TiltCard key={t.tripId} className="profile-trip-card">
             <img className="cover" src={t.coverPhoto || ""} alt="" />
             <div className="body">
               <strong>{t.tripName}</strong>
@@ -83,7 +81,7 @@ export function ProfilePage({ user, onChange }: { user: User; onChange: () => vo
           </TiltCard>
         ))}
       </div>
-      <h2 style={{ marginTop: 24 }}>Previous trips</h2>
+      <div className="profile-section-heading compact"><div><p className="eyebrow">Your archive</p><h2>Previous trips</h2></div></div>
       <div className="row-scroll">
         {(previous.length ? previous : trips).map((t) => (
           <TiltCard key={t.tripId}>
@@ -95,7 +93,7 @@ export function ProfilePage({ user, onChange }: { user: User; onChange: () => vo
           </TiltCard>
         ))}
       </div>
-      <h2 style={{ marginTop: 24 }}>Saved destinations</h2>
+      <div className="profile-section-heading compact"><div><p className="eyebrow">Inspiration</p><h2>Destinations</h2></div><button className="chip" onClick={() => navigate("/search")}>Explore</button></div>
       <div className="row-scroll">
         {cities.slice(0, 6).map((c) => (
           <TiltCard key={c.cityId} onClick={() => navigate(`/search?q=${c.cityName}`)}>
@@ -103,15 +101,17 @@ export function ProfilePage({ user, onChange }: { user: User; onChange: () => vo
           </TiltCard>
         ))}
       </div>
+      <div className="danger-zone">
+      <div><strong>Delete account</strong><p className="muted">This permanently removes your profile and trips.</p></div>
       <button
-        className="chip"
-        style={{ marginTop: 24 }}
+        className="btn-danger"
         onClick={() => {
           if (confirm("Delete this account?")) api.deleteMe().then(() => { api.logout(); navigate("/register"); }).catch(() => setError("Could not delete account."));
         }}
       >
         Delete account
       </button>
+      </div>
     </Page3D>
   );
 }

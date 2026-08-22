@@ -243,16 +243,20 @@ export const db = {
 };
 
 export function tripStatus(trip: Trip, today = new Date()) {
-  const start = new Date(trip.start_date);
-  const end = new Date(trip.end_date);
-  const t = new Date(today.toISOString().slice(0, 10));
-  if (t < start) return "Upcoming";
-  if (t > end) return "Completed";
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, "0");
+  const day = String(today.getDate()).padStart(2, "0");
+  const todayStr = `${year}-${month}-${day}`;
+  const startStr = trip.start_date ? trip.start_date.slice(0, 10) : "";
+  const endStr = trip.end_date ? trip.end_date.slice(0, 10) : "";
+
+  if (startStr && startStr > todayStr) return "Upcoming";
+  if (endStr && endStr < todayStr) return "Completed";
   return "Ongoing";
 }
 
 export function money(n: number) {
-  return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(n);
+  return new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR" }).format(n);
 }
 
 export function dayCount(start: string, end: string) {

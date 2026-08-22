@@ -14,7 +14,7 @@ export function Shell({
     <div className="app-shell">
       <header className="topbar">
         <div className="brand" onClick={() => navigate("/")} style={{ cursor: "pointer" }}>
-          Globetrotter
+          GlobeTrotter
         </div>
         <form
           className="search-cluster"
@@ -53,7 +53,7 @@ export function Shell({
               navigate("/login");
             }}
           >
-            Exit
+            Logout
           </button>
         </nav>
       </header>

@@ -1,14 +1,24 @@
 import prisma from "../config/prisma.js";
 
-function tripStatus(trip) {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+function toDateString(date) {
+  if (!date) return "";
+  if (typeof date === "string") return date.slice(0, 10);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
 
-  if (trip.startDate && new Date(trip.startDate) > today) {
+function tripStatus(trip) {
+  const todayStr = toDateString(new Date());
+  const startStr = trip.startDate ? toDateString(new Date(trip.startDate)) : "";
+  const endStr = trip.endDate ? toDateString(new Date(trip.endDate)) : "";
+
+  if (startStr && startStr > todayStr) {
     return "upcoming";
   }
 
-  if (trip.endDate && new Date(trip.endDate) < today) {
+  if (endStr && endStr < todayStr) {
     return "completed";
   }
 

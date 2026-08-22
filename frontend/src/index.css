@@ -308,6 +308,40 @@ textarea { min-height: 96px; resize: vertical; }
   border: 1px solid var(--line);
   background: var(--bg-elev);
 }
+.profile-hero {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  padding: 28px;
+  margin-bottom: 20px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: linear-gradient(115deg, rgba(255,253,248,.94), rgba(232,220,203,.7));
+}
+.profile-hero-copy h1 { margin-bottom: 2px; }
+.profile-hero-copy .eyebrow, .profile-section-heading .eyebrow, .panel-heading .eyebrow { margin: 0 0 4px; }
+.profile-layout { display: grid; grid-template-columns: minmax(0, 1fr) 220px; gap: 18px; align-items: start; }
+.profile-panel { padding: 24px; border: 1px solid var(--line); border-radius: var(--radius); background: rgba(255,253,248,.76); }
+.panel-heading, .profile-section-heading, .danger-zone { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.profile-status { color: #45604b; background: #e4efe3; border-radius: 999px; padding: 7px 11px; font-size: 12px; }
+.profile-stats { display: grid; gap: 10px; }
+.profile-stat { display: grid; gap: 2px; padding: 18px; border: 1px solid var(--line); border-radius: 18px; background: var(--bg-elev); }
+.profile-stat strong { font-family: var(--serif); font-size: 34px; }
+.profile-stat span { color: var(--muted); font-size: 13px; }
+.profile-section-heading { margin: 34px 0 12px; }
+.profile-section-heading.compact { margin-top: 28px; }
+.profile-trip-card { min-width: 220px; }
+.danger-zone { margin-top: 34px; padding: 18px 20px; border: 1px solid rgba(153, 73, 57, .3); border-radius: 18px; background: rgba(255, 245, 240, .7); }
+.danger-zone p { margin: 4px 0 0; font-size: 13px; }
+.btn-danger { border: 1px solid rgba(153, 73, 57, .4); color: #8b3e30; background: transparent; border-radius: 999px; padding: 10px 16px; cursor: pointer; }
+.btn-danger:hover { background: #f8e1d9; }
+@media (max-width: 760px) {
+  .profile-layout { grid-template-columns: 1fr; }
+  .profile-stats { grid-template-columns: repeat(3, 1fr); }
+  .profile-stat { padding: 12px; }
+  .profile-stat strong { font-size: 26px; }
+  .danger-zone { align-items: flex-start; flex-direction: column; }
+}
 .list-card {
   display: grid;
   grid-template-columns: 140px 1fr auto;

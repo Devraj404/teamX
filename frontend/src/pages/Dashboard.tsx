@@ -3,31 +3,11 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { Page3D, TiltCard } from "../components/Motion";
 import { api, type ApiCity, type ApiTrip } from "../api";
+import { getCityPhoto, getTripCoverPhoto } from "../utils/images";
 import type { User } from "../types";
 
-const DEFAULT_TRIP_COVER =
-  "https://images.unsplash.com/photo-1500534623283-312aade485b7?auto=format&fit=crop&w=800&q=80";
-
-const CITY_IMAGES: Record<string, string> = {
-  Tokyo: "https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?auto=format&fit=crop&w=800&q=80",
-  Paris: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=800&q=80",
-  "New York": "https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?auto=format&fit=crop&w=800&q=80",
-  Rome: "https://images.unsplash.com/photo-1552832230-c0197dd311b5?auto=format&fit=crop&w=800&q=80",
-  Kyoto: "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=800&q=80",
-  Barcelona: "https://images.unsplash.com/photo-1539037116277-4db20889f2d4?auto=format&fit=crop&w=800&q=80",
-  London: "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?auto=format&fit=crop&w=800&q=80",
-  Sydney: "https://images.unsplash.com/photo-1506973035872-a4ec16b8e8d9?auto=format&fit=crop&w=800&q=80",
-};
-
-function getCityImage(cityName: string): string {
-  return (
-    CITY_IMAGES[cityName] ||
-    "https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=800&q=80"
-  );
-}
-
 function formatMoney(amount: number): string {
-  return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(amount);
+  return new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(amount);
 }
 
 function formatDate(dateStr: string | null): string {
@@ -143,7 +123,7 @@ export function DashboardPage({ user }: { user: User }) {
             transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
             role="img"
             aria-label={activeCity ? `${activeCity.cityName}, ${activeCity.country}` : "Featured destination"}
-            style={{ backgroundImage: `url(${activeCity ? getCityImage(activeCity.cityName) : DEFAULT_TRIP_COVER})` }}
+            style={{ backgroundImage: `url(${getCityPhoto(activeCity?.cityName)})` }}
           />
         </AnimatePresence>
         <div className="overlay">
@@ -200,7 +180,7 @@ export function DashboardPage({ user }: { user: User }) {
       <div className="row-scroll">
         {sortedCities.slice(0, 6).map((city) => (
           <TiltCard key={city.cityId} onClick={() => navigate(`/search?q=${encodeURIComponent(city.cityName)}`)}>
-            <img className="cover" src={getCityImage(city.cityName)} alt={city.cityName} />
+            <img className="cover" src={getCityPhoto(city.cityName)} alt={city.cityName} />
             <div className="body">
               <strong>{city.cityName}</strong>
               <div className="muted">
@@ -240,17 +220,20 @@ export function DashboardPage({ user }: { user: User }) {
         </div>
       ) : (
         <div className="grid" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", marginTop: 12 }}>
-          {(upcoming.length ? upcoming : trips).slice(0, 3).map((trip) => (
-            <TiltCard key={trip.tripId} className="trip-card" onClick={() => navigate(`/trips/${trip.tripId}`)}>
-              <img className="cover" src={trip.coverPhoto || DEFAULT_TRIP_COVER} alt={trip.tripName} />
-              <div className="body">
-                <strong>{trip.tripName}</strong>
-                <div className="muted">
-                  {formatDate(trip.startDate)} {trip.endDate ? `→ ${formatDate(trip.endDate)}` : ""} · {trip.status}
+          {(upcoming.length ? upcoming : trips).slice(0, 3).map((trip) => {
+            const firstCity = trip.sections?.[0]?.city?.cityName;
+            return (
+              <TiltCard key={trip.tripId} className="trip-card" onClick={() => navigate(`/trips/${trip.tripId}`)}>
+                <img className="cover" src={getTripCoverPhoto(trip.coverPhoto, firstCity)} alt={trip.tripName} />
+                <div className="body">
+                  <strong>{trip.tripName}</strong>
+                  <div className="muted">
+                    {formatDate(trip.startDate)} {trip.endDate ? `→ ${formatDate(trip.endDate)}` : ""} · {trip.status}
+                  </div>
                 </div>
-              </div>
-            </TiltCard>
-          ))}
+              </TiltCard>
+            );
+          })}
         </div>
       )}
 
@@ -259,15 +242,18 @@ export function DashboardPage({ user }: { user: User }) {
         <>
           <h2 style={{ marginTop: 28 }}>Previous trips</h2>
           <div className="grid" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", marginTop: 12 }}>
-            {previous.slice(0, 3).map((trip) => (
-              <TiltCard key={trip.tripId} onClick={() => navigate(`/trips/${trip.tripId}`)}>
-                <img className="cover" src={trip.coverPhoto || DEFAULT_TRIP_COVER} alt={trip.tripName} />
-                <div className="body">
-                  <strong>{trip.tripName}</strong>
-                  <div className="muted">{trip.status}</div>
-                </div>
-              </TiltCard>
-            ))}
+            {previous.slice(0, 3).map((trip) => {
+              const firstCity = trip.sections?.[0]?.city?.cityName;
+              return (
+                <TiltCard key={trip.tripId} onClick={() => navigate(`/trips/${trip.tripId}`)}>
+                  <img className="cover" src={getTripCoverPhoto(trip.coverPhoto, firstCity)} alt={trip.tripName} />
+                  <div className="body">
+                    <strong>{trip.tripName}</strong>
+                    <div className="muted">{trip.status}</div>
+                  </div>
+                </TiltCard>
+              );
+            })}
           </div>
         </>
       )}

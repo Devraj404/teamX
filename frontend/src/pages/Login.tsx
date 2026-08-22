@@ -39,7 +39,7 @@ export function LoginPage() {
       </div>
       <div className="auth-panel">
         <form className="form" onSubmit={onSubmit}>
-          <div className="photo-orb brand-orb" aria-label="Globetrotter">
+          <div className="photo-orb brand-orb" aria-label="GlobeTrotter">
             <Globe />
           </div>
           <h2>Welcome back</h2>

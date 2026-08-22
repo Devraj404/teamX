@@ -2,6 +2,7 @@ import { FormEvent, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Page3D, TiltCard } from "../components/Motion";
 import { api, type ApiActivity, type ApiCity } from "../api";
+import { getActivityPhoto } from "../utils/images";
 import type { User } from "../types";
 
 export function CreateTripPage({ user }: { user: User }) {
@@ -115,7 +116,7 @@ export function CreateTripPage({ user }: { user: User }) {
       <div className="grid suggestion-grid">
         {suggestions.map((a) => (
           <TiltCard key={a.activityId} onClick={() => navigate(`/search?tab=activities&q=${encodeURIComponent(a.activityName)}`)}>
-            <img className="cover" src="https://images.unsplash.com/photo-1500534623283-312aade485b7?auto=format&fit=crop&w=800&q=80" alt="" />
+            <img className="cover" src={getActivityPhoto(a.type, a.city?.cityName)} alt={a.activityName} />
             <div className="body">
               <strong>{a.activityName}</strong>
               <div className="muted">{a.type} · {a.city?.cityName || ""}</div>

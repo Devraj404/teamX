@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Page3D } from "../components/Motion";
 import { api, type ApiTrip } from "../api";
+import { getTripCoverPhoto } from "../utils/images";
 import type { User } from "../types";
 
 export function MyTripsPage({ user }: { user: User }) {
@@ -35,11 +36,12 @@ export function MyTripsPage({ user }: { user: User }) {
             {trips
               .filter((t) => t.status.toLowerCase() === group.toLowerCase())
               .map((trip) => {
+                const firstCity = trip.sections?.[0]?.city?.cityName;
                 return (
                   <article key={trip.tripId} className="card list-card">
-                    <img src={trip.coverPhoto || "https://images.unsplash.com/photo-1500534623283-312aade485b7?auto=format&fit=crop&w=800&q=80"} alt="" />
+                    <img src={getTripCoverPhoto(trip.coverPhoto, firstCity)} alt={trip.tripName} style={{ width: 110, height: 90, objectFit: "cover", borderRadius: 12 }} />
                     <div>
-                      <strong>Short overview of the trip · {trip.tripName}</strong>
+                      <strong>{trip.tripName}</strong>
                       <div className="muted">
                         {trip.startDate?.slice(0, 10) || "No start date"} – {trip.endDate?.slice(0, 10) || "No end date"} · {trip.sections.length} stops
                       </div>

@@ -14,7 +14,7 @@ export function ForgotPage() {
     <div className="auth-panel" style={{ minHeight: "100vh" }}>
       <form className="form" onSubmit={onSubmit}>
         <h2>Forgot password</h2>
-        <p className="muted">Enter the email on your Globetrotter account.</p>
+        <p className="muted">Enter the email on your GlobeTrotter account.</p>
         <label>
           Email
           <input name="email" type="email" required />
