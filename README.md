@@ -65,9 +65,9 @@ npm install
 Create environment file `.env`:
 
 ```env
-DATABASE_URL="postgresql://postgres:postgres@localhost:5432/globetrotter?schema=public"
+DATABASE_URL=""
 PORT=3000
-JWT_SECRET="globetrotter-super-secret-jwt-key"
+JWT_SECRET=""
 ```
 
 #### Database Initialization & Seeding:
