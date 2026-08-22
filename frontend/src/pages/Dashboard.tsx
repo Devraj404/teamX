@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { Page3D, TiltCard } from "../components/Motion";
 import { db, money, tripStatus } from "../db";
@@ -20,19 +21,56 @@ export function DashboardPage({ user }: { user: User }) {
   const regions = [...cities].sort((a, b) =>
     sort === "popularity" ? b.popularity - a.popularity : a.cost_index - b.cost_index,
   );
+  const [slide, setSlide] = useState(0);
+  const featured = regions.slice(0, 5);
+  const activeCity = featured[slide] || cities[0];
+
+  useEffect(() => {
+    if (featured.length < 2) return;
+    const timer = window.setInterval(() => setSlide((current) => (current + 1) % featured.length), 5000);
+    return () => window.clearInterval(timer);
+  }, [featured.length]);
 
   return (
     <Page3D>
-      <section className="hero-banner">
-        <img
-          src="https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=1600&q=80"
-          alt="Travel planning map and essentials"
-        />
+      <section className="destination-carousel" aria-label="Featured destinations">
+        <AnimatePresence mode="wait">
+          <motion.div
+            className="carousel-image"
+            key={activeCity?.city_id}
+            initial={{ opacity: 0, scale: 1.06 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.98 }}
+            transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
+            role="img"
+            aria-label={activeCity ? `${activeCity.city_name}, ${activeCity.country}` : "Featured destination"}
+            style={{ backgroundImage: `url(${activeCity?.image || ""})` }}
+          />
+        </AnimatePresence>
         <div className="overlay">
-          <p className="muted">Welcome back, {user.first_name || user.username}</p>
-          <h1>Where shall we go next?</h1>
-          <p>Planned budget across your trips: {money(spend)}</p>
+          <p className="eyebrow">Featured destination</p>
+          <h1>{activeCity?.city_name || "Plan your next escape"}</h1>
+          <p>{activeCity?.country} · {activeCity?.region} · popularity score {activeCity?.popularity}</p>
+          <button className="btn carousel-cta" onClick={() => activeCity && navigate(`/search?q=${activeCity.city_name}`)}>
+            Explore {activeCity?.city_name}
+          </button>
         </div>
+        <div className="carousel-controls">
+          {featured.map((city, index) => (
+            <button
+              key={city.city_id}
+              className={`carousel-dot ${index === slide ? "active" : ""}`}
+              onClick={() => setSlide(index)}
+              aria-label={`Show ${city.city_name}`}
+            />
+          ))}
+        </div>
+      </section>
+
+      <section className="home-stats" aria-label="Trip overview">
+        <article><strong>{trips.length}</strong><span>saved trips</span></article>
+        <article><strong>{upcoming.length}</strong><span>upcoming escapes</span></article>
+        <article><strong>{money(spend)}</strong><span>planned budget</span></article>
       </section>
 
       <div style={{ display: "flex", justifyContent: "space-between", margin: "28px 0 12px" }}>

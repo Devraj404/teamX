@@ -19,8 +19,12 @@ export function BudgetPage() {
   }, [items]);
   const total = Object.values(byCat).reduce((a, b) => a + b, 0);
   const planned = sections.reduce((a, s) => a + Number(s.budget), 0);
+  const estimatedByCat = total > 0
+    ? byCat
+    : { transport: planned * 0.15, stay: planned * 0.35, activities: planned * 0.35, meals: planned * 0.15 };
+  const displayTotal = total || planned;
   const days = trip ? dayCount(trip.start_date, trip.end_date) : 1;
-  const perDay = total / days;
+  const perDay = displayTotal / days;
   const over = sections.filter((s) => {
     const spent = db.activitiesForSection(s.section_id).reduce((a, x) => a + Number(x.expense), 0);
     return s.budget > 0 && spent > s.budget;
@@ -32,7 +36,7 @@ export function BudgetPage() {
     <Page3D>
       <h1>Trip budget & cost breakdown</h1>
       <p className="muted">
-        Planned section budgets {money(planned)} · booked items {money(total)} · average {money(perDay)} / day
+        Planned {money(planned)} · booked {money(total)} · estimated average {money(perDay)} / day
       </p>
       {over.length > 0 && (
         <div className="alert" style={{ margin: "16px 0" }}>
@@ -41,13 +45,14 @@ export function BudgetPage() {
       )}
       <div className="charts" style={{ marginTop: 20 }}>
         <div className="chart-box">
-          <strong>Share by category</strong>
+          <strong>{total ? "Booked cost by category" : "Estimated cost mix"}</strong>
+          {!total && <p className="muted">Add activities to replace this planning estimate with live costs.</p>}
           <svg viewBox="0 0 120 120" width="180" height="180">
             {(() => {
               let acc = 0;
               const colors = ["#8a8680", "#cfc8bc", "#5c5a56", "#d9d4cc"];
               return cats.map((cat, i) => {
-                const value = byCat[cat] / Math.max(total, 1);
+                const value = estimatedByCat[cat] / Math.max(displayTotal, 1);
                 const start = acc;
                 acc += value;
                 const a0 = start * Math.PI * 2 - Math.PI / 2;
@@ -70,7 +75,7 @@ export function BudgetPage() {
           {cats.map((c) => (
             <div key={c} className="stat">
               <span>{c}</span>
-              <strong>{money(byCat[c])}</strong>
+              <strong>{money(estimatedByCat[c])}</strong>
             </div>
           ))}
         </div>
@@ -83,15 +88,15 @@ export function BudgetPage() {
                 style={{
                   height: 12,
                   borderRadius: 99,
-                  background: "#2a2d33",
+                    background: "var(--bg-soft)",
                   overflow: "hidden",
                 }}
               >
                 <div
                   style={{
-                    width: `${Math.min(100, (Number(s.budget) / Math.max(planned, 1)) * 100)}%`,
+                    width: `${Math.max(4, Math.min(100, (Number(s.budget) / Math.max(planned, 1)) * 100))}%`,
                     height: "100%",
-                    background: "#cfc8bc",
+                    background: "var(--stone)",
                   }}
                 />
               </div>

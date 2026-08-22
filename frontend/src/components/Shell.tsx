@@ -25,13 +25,13 @@ export function Shell({
           }}
         >
           <input name="q" placeholder="Search cities, activities, trips…" />
-          <button className="chip" type="button" onClick={() => navigate("/search?group=region")}>
+          <button className="chip" type="button" onClick={() => navigate("/search?tab=cities&group=region")}>
             Group by
           </button>
-          <button className="chip" type="button" onClick={() => navigate("/search?filter=popular")}>
+          <button className="chip" type="button" onClick={() => navigate("/search?tab=cities&filter=popular")}>
             Filter
           </button>
-          <button className="chip" type="button" onClick={() => navigate("/search?sort=cost")}>
+          <button className="chip" type="button" onClick={() => navigate("/search?tab=cities&sort=cost")}>
             Sort by
           </button>
         </form>
@@ -42,7 +42,9 @@ export function Shell({
           <NavLink to="/calendar">Calendar</NavLink>
           {user.role === "admin" && <NavLink to="/admin">Admin</NavLink>}
           <NavLink to="/profile" title="Profile">
-            <img className="avatar" src={user.photo} alt={user.first_name} />
+            <span className="avatar avatar-initial" aria-label={`${user.first_name}'s profile`}>
+              {(user.first_name || user.username).slice(0, 1).toUpperCase()}
+            </span>
           </NavLink>
           <button
             className="btn-ghost"

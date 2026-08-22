@@ -23,6 +23,7 @@ export function CalendarPage({ user }: { user: User }) {
         label: `${trip.trip_name} · ${db.city(section.city_id || 0)?.city_name || "Stop"}`,
         start: section.start_date,
         end: section.end_date,
+        cover: trip.cover_photo,
       })),
     );
   }, [trips]);
@@ -53,7 +54,7 @@ export function CalendarPage({ user }: { user: User }) {
               <div className="cal-cell" key={i}>
                 {day}
                 {hits.map((h) => (
-                  <div className="bar" key={h.label + iso}>
+                  <div className="bar trip-cover-bar" key={h.label + iso} style={{ backgroundImage: `linear-gradient(90deg, rgba(61,45,29,.72), rgba(61,45,29,.32)), url(${h.cover})` }}>
                     {h.label}
                   </div>
                 ))}

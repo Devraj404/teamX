@@ -10,14 +10,13 @@ export function ProfilePage({ user, onChange }: { user: User; onChange: () => vo
   const planned = trips.filter((t) => tripStatus(t) !== "Completed");
   const previous = trips.filter((t) => tripStatus(t) === "Completed");
   const [lang, setLang] = useState(localStorage.getItem("gt.lang") || "English");
-  const [photo, setPhoto] = useState(user.photo);
 
   const save = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const f = new FormData(e.currentTarget);
     db.updateUser({
       ...user,
-      photo,
+      photo: user.photo,
       first_name: String(f.get("first_name")),
       last_name: String(f.get("last_name")),
       email: String(f.get("email")),
@@ -33,7 +32,9 @@ export function ProfilePage({ user, onChange }: { user: User; onChange: () => vo
   return (
     <Page3D>
       <div style={{ display: "flex", gap: 20, alignItems: "center" }}>
-        <img className="avatar" src={photo} alt="" style={{ width: 92, height: 92 }} />
+        <div className="avatar avatar-initial profile-initial" aria-label="Profile initial">
+          {(user.first_name || user.username).slice(0, 1).toUpperCase()}
+        </div>
         <div>
           <h1>User details</h1>
           <p className="muted">
@@ -42,20 +43,6 @@ export function ProfilePage({ user, onChange }: { user: User; onChange: () => vo
         </div>
       </div>
       <form className="form wide" style={{ marginTop: 24 }} onSubmit={save}>
-        <label>
-          Profile photo
-          <input
-            type="file"
-            accept="image/*"
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (!file) return;
-              const reader = new FileReader();
-              reader.onload = () => setPhoto(String(reader.result));
-              reader.readAsDataURL(file);
-            }}
-          />
-        </label>
         <div className="two">
           <label>First name<input name="first_name" defaultValue={user.first_name} /></label>
           <label>Last name<input name="last_name" defaultValue={user.last_name} /></label>

@@ -10,7 +10,7 @@ import type {
   User,
 } from "./types";
 
-const KEY = "globetrotter.db.v2";
+const KEY = "globetrotter.db.v4";
 const SESSION = "globetrotter.session";
 const REMEMBERED_USERNAME = "globetrotter.remembered-username";
 
