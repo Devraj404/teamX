@@ -12,7 +12,7 @@
 - **ORM**: Prisma ORM
 - **Authentication**: JWT (JSON Web Tokens) with `Authorization: Bearer <token>`
 - **Security**: `bcryptjs` password hashing, `express-validator` input sanitization
-- **Port**: `3000`
+- **Port**: `5000`
 
 ### **Frontend**
 - **Framework**: React 19 + TypeScript + Vite
@@ -65,9 +65,9 @@ npm install
 Create environment file `.env`:
 
 ```env
-DATABASE_URL="postgresql://postgres:postgres@localhost:5432/globetrotter?schema=public"
+DATABASE_URL=""
 PORT=3000
-JWT_SECRET="globetrotter-super-secret-jwt-key"
+JWT_SECRET=""
 ```
 
 #### Database Initialization & Seeding:
