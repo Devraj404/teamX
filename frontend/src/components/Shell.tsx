@@ -1,5 +1,5 @@
 import { NavLink, useNavigate } from "react-router-dom";
-import { db } from "../db";
+import { api } from "../api";
 import type { User } from "../types";
 
 export function Shell({
@@ -47,7 +47,7 @@ export function Shell({
           <button
             className="btn-ghost"
             onClick={() => {
-              db.logout();
+              api.logout();
               navigate("/login");
             }}
           >
