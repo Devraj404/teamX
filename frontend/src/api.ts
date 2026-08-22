@@ -93,7 +93,8 @@ type ApiOptions = RequestInit & { auth?: boolean };
 async function request<T>(path: string, options: ApiOptions = {}): Promise<T> {
   const { auth = false, headers, ...init } = options;
   const token = localStorage.getItem(TOKEN_KEY);
-  const response = await fetch(`${API_URL}${path}`, {
+  const cleanPath = path.startsWith("/") ? path : `/${path}`;
+  const response = await fetch(`${API_URL}${cleanPath}`, {
     ...init,
     headers: {
       ...(init.body ? { "Content-Type": "application/json" } : {}),
