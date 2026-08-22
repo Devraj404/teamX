@@ -20,13 +20,16 @@ export async function getTripBudget(req, res) {
   }
 
   const byType = {};
+  const byCategory = {};
   let total = 0;
   const bySection = trip.sections.map((section) => {
     const sectionTotal = section.sectionActivities.reduce((sum, item) => {
       const expense = Number(item.expense || 0);
       const type = item.activity?.type || "other";
+      const category = item.expenseCategory || "other";
       total += expense;
       byType[type] = (byType[type] || 0) + expense;
+      byCategory[category] = (byCategory[category] || 0) + expense;
       return sum + expense;
     }, 0);
 
@@ -42,6 +45,10 @@ export async function getTripBudget(req, res) {
     tripId,
     total,
     byType,
+    byCategory,
     bySection,
+    averagePerDay: trip.startDate && trip.endDate
+      ? total / (Math.floor((new Date(trip.endDate) - new Date(trip.startDate)) / 86400000) + 1)
+      : null,
   });
 }

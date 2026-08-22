@@ -45,12 +45,19 @@ export async function listSectionActivities(req, res) {
 export async function createSectionActivity(req, res) {
   const tripId = Number(req.params.tripId);
   const sectionId = Number(req.params.sectionId);
-  const { activityId, activityDate, activityName, expense } = req.body;
+  const { activityId, activityDate, activityName, expense, expenseCategory } = req.body;
   const section = await findOwnedSection(tripId, sectionId, req.user.userId);
 
   if (!section) {
     return res.status(404).json({ message: "Section not found" });
   }
+
+    if (activityDate && section.startDate && new Date(activityDate) < new Date(section.startDate)) {
+      return res.status(400).json({ message: "activityDate must be within the section dates" });
+    }
+    if (activityDate && section.endDate && new Date(activityDate) > new Date(section.endDate)) {
+      return res.status(400).json({ message: "activityDate must be within the section dates" });
+    }
 
   let catalogActivity = null;
   if (activityId !== undefined && activityId !== null) {
@@ -70,6 +77,7 @@ export async function createSectionActivity(req, res) {
       activityDate: dateValue(activityDate),
       activityName: activityName?.trim() || catalogActivity?.activityName || null,
       expense: expense ?? catalogActivity?.cost ?? null,
+      expenseCategory: expenseCategory || "activities",
     },
     include: activityInclude,
   });
@@ -81,7 +89,7 @@ export async function updateSectionActivity(req, res) {
   const sectionActivityId = Number(req.params.sectionActivityId);
   const tripId = Number(req.params.tripId);
   const sectionId = Number(req.params.sectionId);
-  const { activityId, activityDate, activityName, expense } = req.body;
+  const { activityId, activityDate, activityName, expense, expenseCategory } = req.body;
   const existingActivity = await findOwnedSectionActivity(
     sectionActivityId,
     tripId,
@@ -93,8 +101,16 @@ export async function updateSectionActivity(req, res) {
     return res.status(404).json({ message: "Section activity not found" });
   }
 
+  const section = await prisma.tripSection.findUnique({ where: { sectionId } });
+  const nextActivityDate = activityDate !== undefined ? activityDate : existingActivity.activityDate;
+  if (nextActivityDate && section?.startDate && new Date(nextActivityDate) < new Date(section.startDate)) {
+    return res.status(400).json({ message: "activityDate must be within the section dates" });
+  }
+  if (nextActivityDate && section?.endDate && new Date(nextActivityDate) > new Date(section.endDate)) {
+    return res.status(400).json({ message: "activityDate must be within the section dates" });
+  }
+
   if (activityId !== undefined && activityId !== null) {
-    const section = await prisma.tripSection.findUnique({ where: { sectionId } });
     const catalogActivity = section
       ? await prisma.activity.findFirst({ where: { activityId, cityId: section.cityId } })
       : null;
@@ -109,7 +125,8 @@ export async function updateSectionActivity(req, res) {
       ...(activityId !== undefined ? { activityId } : {}),
       ...(activityDate !== undefined ? { activityDate: dateValue(activityDate) } : {}),
       ...(activityName !== undefined ? { activityName: activityName?.trim() || null } : {}),
-      ...(expense !== undefined ? { expense: expense || null } : {}),
+      ...(expense !== undefined ? { expense: expense ?? null } : {}),
+      ...(expenseCategory !== undefined ? { expenseCategory } : {}),
     },
     include: activityInclude,
   });

@@ -15,7 +15,7 @@ export const createSectionValidator = [
     .withMessage("endDate must be a valid date")
     .custom((endDate, { req }) => !req.body.startDate || new Date(endDate) >= new Date(req.body.startDate))
     .withMessage("endDate must be on or after startDate"),
-  body("budget").optional({ values: "falsy" }).isDecimal().withMessage("budget must be a decimal number"),
+    body("budget").optional({ nullable: true }).isFloat({ min: 0 }).toFloat().withMessage("budget must be a non-negative number"),
 ];
 
 export const updateSectionValidator = [
@@ -28,5 +28,5 @@ export const updateSectionValidator = [
     .withMessage("endDate must be a valid date")
     .custom((endDate, { req }) => !req.body.startDate || new Date(endDate) >= new Date(req.body.startDate))
     .withMessage("endDate must be on or after startDate"),
-  body("budget").optional({ values: "falsy" }).isDecimal().withMessage("budget must be a decimal number"),
+    body("budget").optional({ nullable: true }).isFloat({ min: 0 }).toFloat().withMessage("budget must be a non-negative number"),
 ];

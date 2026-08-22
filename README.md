@@ -138,6 +138,7 @@ GET    /api/trips/:tripId
 PATCH  /api/trips/:tripId
 DELETE /api/trips/:tripId
 GET    /api/trips/:tripId/budget
+GET    /api/public/trips/:tripId
 ```
 
 Trip status is calculated from dates as `upcoming`, `ongoing`, or `completed`. Users can only access and modify their own trips.
@@ -171,6 +172,8 @@ GET /api/trips/:tripId/budget
 ```
 
 The budget is calculated from itinerary activity expenses and includes totals by activity type and section. No summary values are stored separately.
+
+Expense categories are `transport`, `accommodation`, `activities`, `meals`, and `other`. The budget response also includes category totals and average cost per trip day. Public trip reads are read-only and available only when the trip has `isPublic` set to `true`.
 
 ## Data Model
 

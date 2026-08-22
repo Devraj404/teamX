@@ -13,7 +13,7 @@ export const createSectionActivityValidator = [
   body("activityId").optional({ nullable: true }).isInt({ min: 1 }).withMessage("activityId must be a positive integer"),
   body("activityName").optional({ values: "falsy" }).trim().isLength({ max: 200 }).withMessage("activityName must be at most 200 characters"),
   body("activityDate").optional({ values: "falsy" }).isISO8601().withMessage("activityDate must be a valid date"),
-  body("expense").optional({ values: "falsy" }).isDecimal().withMessage("expense must be a decimal number"),
+    body("expense").optional({ nullable: true }).isFloat({ min: 0 }).toFloat().withMessage("expense must be a non-negative number"),
 ];
 
 export const updateSectionActivityValidator = createSectionActivityValidator;

@@ -99,6 +99,7 @@ model SectionActivity {
   activityDate      DateTime? @map("activity_date") @db.Date
   activityName      String?   @map("activity_name") @db.VarChar(200)
   expense           Decimal?  @db.Decimal(12, 2)
+  expenseCategory   String    @default("activities") @map("expense_category") @db.VarChar(30)
 
   section  TripSection @relation(fields: [sectionId], references: [sectionId], onDelete: Cascade)
   activity Activity?   @relation(fields: [activityId], references: [activityId], onDelete: SetNull)
