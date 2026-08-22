@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import * as THREE from "three";
 
 export function Globe({ className = "" }: { className?: string }) {
+  const containerRef = useRef<HTMLDivElement>(null);
   const ref = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -52,14 +53,14 @@ export function Globe({ className = "" }: { className?: string }) {
     scene.add(markers);
 
     const resize = () => {
-      const { clientWidth, clientHeight } = canvas.parentElement ?? canvas;
+      const { clientWidth, clientHeight } = containerRef.current ?? canvas;
       renderer.setSize(clientWidth, clientHeight, false);
       camera.aspect = clientWidth / Math.max(clientHeight, 1);
       camera.updateProjectionMatrix();
     };
     resize();
     const ro = new ResizeObserver(resize);
-    if (canvas.parentElement) ro.observe(canvas.parentElement);
+    if (containerRef.current) ro.observe(containerRef.current);
 
     let frame = 0;
     const tick = () => {
@@ -77,5 +78,9 @@ export function Globe({ className = "" }: { className?: string }) {
     };
   }, []);
 
-  return <canvas ref={ref} className={`globe-canvas ${className}`} />;
+  return (
+    <div ref={containerRef} className={`globe ${className}`} aria-hidden="true">
+      <canvas ref={ref} className="globe-canvas" />
+    </div>
+  );
 }

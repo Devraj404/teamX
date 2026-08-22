@@ -26,7 +26,7 @@ export function DashboardPage({ user }: { user: User }) {
       <section className="hero-banner">
         <img
           src="https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=1600&q=80"
-          alt="Banner"
+          alt="Travel planning map and essentials"
         />
         <div className="overlay">
           <p className="muted">Welcome back, {user.first_name || user.username}</p>

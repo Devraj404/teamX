@@ -2,17 +2,7 @@ import { motion } from "framer-motion";
 import type { ReactNode } from "react";
 
 export function Page3D({ children }: { children: ReactNode }) {
-  return (
-    <motion.div
-      className="page"
-      initial={{ opacity: 0, rotateX: 12, y: 28, z: -80 }}
-      animate={{ opacity: 1, rotateX: 0, y: 0, z: 0 }}
-      exit={{ opacity: 0, rotateY: -14, x: 40 }}
-      transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-    >
-      {children}
-    </motion.div>
-  );
+  return <div className="page">{children}</div>;
 }
 
 export function TiltCard({

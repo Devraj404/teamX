@@ -40,7 +40,7 @@ export function CreateTripPage({ user }: { user: User }) {
     <Page3D>
       <h1>Create a new trip</h1>
       <p className="muted">Name the journey, pick a first place, and set the window of travel.</p>
-      <form className="form" style={{ marginTop: 24 }} onSubmit={onSubmit}>
+      <form className="form trip-form" style={{ marginTop: 24 }} onSubmit={onSubmit}>
         <label>
           Trip’s name
           <input name="trip_name" required placeholder="Autumn in three cities" />
@@ -87,7 +87,7 @@ export function CreateTripPage({ user }: { user: User }) {
             }}
           />
         </label>
-        {cover && <img src={cover} alt="" style={{ height: 160, objectFit: "cover", borderRadius: 16 }} />}
+        {cover && <img className="trip-cover-preview" src={cover} alt="Selected trip cover" />}
         <button className="btn" type="submit">
           Save trip & build itinerary
         </button>

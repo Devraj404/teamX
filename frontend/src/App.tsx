@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { Shell } from "./components/Shell";
 import { db } from "./db";
@@ -51,8 +51,16 @@ export function App() {
   return (
     <>
       <div className="noise" aria-hidden="true" />
-      <AnimatePresence mode="wait">
-        <Routes location={location} key={location.pathname}>
+      <AnimatePresence mode="wait" initial={false}>
+        <motion.main
+          key={location.pathname}
+          className="route-transition"
+          initial={{ opacity: 0, x: 18 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -12 }}
+          transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
+        >
+        <Routes location={location}>
           <Route path="/login" element={user ? <Navigate to="/" replace /> : <LoginPage />} />
           <Route path="/register" element={user ? <Navigate to="/" replace /> : <RegisterPage />} />
           <Route path="/forgot" element={<ForgotPage />} />
@@ -156,6 +164,7 @@ export function App() {
           />
           <Route path="*" element={<Navigate to={user ? "/" : "/login"} replace />} />
         </Routes>
+        </motion.main>
       </AnimatePresence>
     </>
   );

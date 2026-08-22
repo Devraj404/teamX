@@ -12,6 +12,7 @@ import type {
 
 const KEY = "globetrotter.db.v2";
 const SESSION = "globetrotter.session";
+const REMEMBERED_USERNAME = "globetrotter.remembered-username";
 
 function load(): Database {
   const raw = localStorage.getItem(KEY);
@@ -45,14 +46,22 @@ export const db = {
   getUser: (id: number) => load().users.find((u) => u.user_id === id),
   getUserByUsername: (username: string) =>
     load().users.find((u) => u.username.toLowerCase() === username.toLowerCase()),
-  login: (username: string, password: string) => {
+  login: (username: string, password: string, remember = false) => {
     const user = load().users.find(
-      (u) => u.username.toLowerCase() === username.toLowerCase() && u.password === password,
+      (u) =>
+        (u.username.toLowerCase() === username.toLowerCase() ||
+          u.email.toLowerCase() === username.toLowerCase()) &&
+        u.password === password,
     );
-    if (user) localStorage.setItem(SESSION, String(user.user_id));
+    if (user) {
+      localStorage.setItem(SESSION, String(user.user_id));
+      if (remember) localStorage.setItem(REMEMBERED_USERNAME, user.username);
+      else localStorage.removeItem(REMEMBERED_USERNAME);
+    }
     return user ?? null;
   },
   logout: () => localStorage.removeItem(SESSION),
+  rememberedUsername: () => localStorage.getItem(REMEMBERED_USERNAME) || "",
   currentUser: () => {
     const id = Number(localStorage.getItem(SESSION));
     if (!id) return null;

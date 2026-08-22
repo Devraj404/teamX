@@ -26,6 +26,22 @@ export function SharePage() {
         Shared by {owner?.first_name} {owner?.last_name} · {trip.start_date} → {trip.end_date}
       </p>
       <p>{trip.description}</p>
+      <div className="share-actions">
+        <button
+          className="chip"
+          onClick={() => navigator.clipboard?.writeText(window.location.href)}
+        >
+          Copy public link
+        </button>
+        <a
+          className="chip"
+          href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`Take a look at ${trip.trip_name}`)}&url=${encodeURIComponent(window.location.href)}`}
+          target="_blank"
+          rel="noreferrer"
+        >
+          Share
+        </a>
+      </div>
       <img
         src={trip.cover_photo}
         alt=""
@@ -56,9 +72,7 @@ export function SharePage() {
           );
         })}
       </div>
-      <p style={{ marginTop: 24 }}>
-        <Link to="/register">Copy this plan by creating a Globetrotter account</Link>
-      </p>
+      <p style={{ marginTop: 24 }}><Link to="/register">Copy this plan by creating a Globetrotter account</Link></p>
     </Page3D>
   );
 }
