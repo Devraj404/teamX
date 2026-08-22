@@ -41,6 +41,10 @@ export async function listTrips(req, res) {
 export async function createTrip(req, res) {
   const { tripName, description, startDate, endDate, coverPhoto, isPublic } = req.body;
 
+  if (startDate && endDate && new Date(startDate) > new Date(endDate)) {
+    return res.status(400).json({ message: "startDate must be on or before endDate" });
+  }
+
   const trip = await prisma.trip.create({
     data: {
       userId: req.user.userId,
@@ -83,6 +87,12 @@ export async function updateTrip(req, res) {
 
   if (!existingTrip) {
     return res.status(404).json({ message: "Trip not found" });
+  }
+
+  const nextStartDate = startDate !== undefined ? startDate : existingTrip.startDate;
+  const nextEndDate = endDate !== undefined ? endDate : existingTrip.endDate;
+  if (nextStartDate && nextEndDate && new Date(nextStartDate) > new Date(nextEndDate)) {
+    return res.status(400).json({ message: "startDate must be on or before endDate" });
   }
 
   const trip = await prisma.trip.update({

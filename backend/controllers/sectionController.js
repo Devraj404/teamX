@@ -53,6 +53,16 @@ export async function createSection(req, res) {
     return res.status(404).json({ message: "City not found" });
   }
 
+  if (startDate && endDate && new Date(startDate) > new Date(endDate)) {
+    return res.status(400).json({ message: "startDate must be on or before endDate" });
+  }
+  if (startDate && trip.startDate && new Date(startDate) < new Date(trip.startDate)) {
+    return res.status(400).json({ message: "Section startDate must be within the trip dates" });
+  }
+  if (endDate && trip.endDate && new Date(endDate) > new Date(trip.endDate)) {
+    return res.status(400).json({ message: "Section endDate must be within the trip dates" });
+  }
+
   const lastSection = await prisma.tripSection.findFirst({
     where: { tripId },
     orderBy: { sectionOrder: "desc" },
@@ -82,6 +92,12 @@ export async function updateSection(req, res) {
 
   if (!section) {
     return res.status(404).json({ message: "Section not found" });
+  }
+
+  const nextStartDate = startDate !== undefined ? startDate : section.startDate;
+  const nextEndDate = endDate !== undefined ? endDate : section.endDate;
+  if (nextStartDate && nextEndDate && new Date(nextStartDate) > new Date(nextEndDate)) {
+    return res.status(400).json({ message: "startDate must be on or before endDate" });
   }
 
   if (cityId !== undefined) {

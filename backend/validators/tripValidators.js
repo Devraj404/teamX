@@ -14,7 +14,12 @@ export const createTripValidator = [
     .isLength({ max: 200 })
     .withMessage("tripName must be at most 200 characters"),
   body("startDate").optional({ values: "falsy" }).isISO8601().withMessage("startDate must be a valid date"),
-  body("endDate").optional({ values: "falsy" }).isISO8601().withMessage("endDate must be a valid date"),
+  body("endDate")
+    .optional({ values: "falsy" })
+    .isISO8601()
+    .withMessage("endDate must be a valid date")
+    .custom((endDate, { req }) => !req.body.startDate || new Date(endDate) >= new Date(req.body.startDate))
+    .withMessage("endDate must be on or after startDate"),
   body("isPublic").optional().isBoolean().toBoolean().withMessage("isPublic must be boolean"),
 ];
 
@@ -27,6 +32,11 @@ export const updateTripValidator = [
     .isLength({ max: 200 })
     .withMessage("tripName must be at most 200 characters"),
   body("startDate").optional({ values: "falsy" }).isISO8601().withMessage("startDate must be a valid date"),
-  body("endDate").optional({ values: "falsy" }).isISO8601().withMessage("endDate must be a valid date"),
+  body("endDate")
+    .optional({ values: "falsy" })
+    .isISO8601()
+    .withMessage("endDate must be a valid date")
+    .custom((endDate, { req }) => !req.body.startDate || new Date(endDate) >= new Date(req.body.startDate))
+    .withMessage("endDate must be on or after startDate"),
   body("isPublic").optional().isBoolean().toBoolean().withMessage("isPublic must be boolean"),
 ];

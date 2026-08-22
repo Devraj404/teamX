@@ -57,11 +57,11 @@ export async function register(req, res) {
 
 export async function login(req, res) {
   try {
-    const { username, password } = req.body;
-    const normalizedUsername = username.trim();
+    const { username, email, password } = req.body;
+    const identifier = (email || username).trim();
 
-    const user = await prisma.user.findUnique({
-      where: { username: normalizedUsername },
+    const user = await prisma.user.findFirst({
+      where: { OR: [{ username: identifier }, { email: identifier }] },
     });
 
     if (!user) {
@@ -85,6 +85,52 @@ export async function login(req, res) {
     console.error("Login error:", error);
     return res.status(500).json({ message: "Internal server error" });
   }
+}
+
+export async function updateMe(req, res) {
+  try {
+    const { username, email, password, firstName, lastName, phoneNumber, city, country, photo, additionalInformation } = req.body;
+    const duplicate = await prisma.user.findFirst({
+      where: {
+        userId: { not: req.user.userId },
+        OR: [
+          ...(username ? [{ username: username.trim() }] : []),
+          ...(email ? [{ email: email.trim() }] : []),
+        ],
+      },
+    });
+
+    if (duplicate) {
+      return res.status(409).json({ message: "Username or email already in use" });
+    }
+
+    const user = await prisma.user.update({
+      where: { userId: req.user.userId },
+      data: {
+        ...(username !== undefined ? { username: username.trim() } : {}),
+        ...(email !== undefined ? { email: email?.trim() || null } : {}),
+        ...(password !== undefined ? { password: await hashPassword(password) } : {}),
+        ...(firstName !== undefined ? { firstName: firstName?.trim() || null } : {}),
+        ...(lastName !== undefined ? { lastName: lastName?.trim() || null } : {}),
+        ...(phoneNumber !== undefined ? { phoneNumber: phoneNumber?.trim() || null } : {}),
+        ...(city !== undefined ? { city: city?.trim() || null } : {}),
+        ...(country !== undefined ? { country: country?.trim() || null } : {}),
+        ...(photo !== undefined ? { photo: photo?.trim() || null } : {}),
+        ...(additionalInformation !== undefined ? { additionalInformation: additionalInformation?.trim() || null } : {}),
+      },
+      select: publicUserSelect,
+    });
+
+    return res.json({ user });
+  } catch (error) {
+    console.error("Update profile error:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+}
+
+export async function deleteMe(req, res) {
+  await prisma.user.delete({ where: { userId: req.user.userId } });
+  return res.status(204).send();
 }
 
 export async function getMe(req, res) {

@@ -14,12 +14,14 @@ import {
   updateTripValidator,
 } from "../validators/tripValidators.js";
 import sectionRoutes from "./sectionRoutes.js";
+import budgetRoutes from "./budgetRoutes.js";
 
 const router = Router();
 
 router.use(authenticate);
 router.get("/", listTrips);
 router.post("/", createTripValidator, validate, createTrip);
+router.use("/:tripId/budget", budgetRoutes);
 router.get("/:tripId", tripIdValidator, validate, getTrip);
 router.patch("/:tripId", tripIdValidator, updateTripValidator, validate, updateTrip);
 router.delete("/:tripId", tripIdValidator, validate, deleteTrip);
