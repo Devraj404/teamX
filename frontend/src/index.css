@@ -197,6 +197,19 @@ h2 { font-size: 32px; }
   gap: 12px;
 }
 .form.wide { width: min(720px, 100%); }
+.trip-form {
+  width: min(760px, 100%);
+  gap: 16px;
+}
+.trip-form label { display: grid; gap: 7px; }
+.trip-form .two { gap: 16px; }
+.trip-cover-preview {
+  width: min(100%, 420px);
+  height: 200px;
+  object-fit: cover;
+  border-radius: 16px;
+  border: 1px solid var(--line);
+}
 label { font-size: 13px; color: var(--muted); }
 input, textarea, select {
   width: 100%;
@@ -327,7 +340,7 @@ textarea { min-height: 96px; resize: vertical; }
 .auth-globe {
   position: absolute;
   z-index: 0;
-  top: -1.5rem;
+  top: 1rem;
   left: 50%;
   width: min(67%, 560px);
   aspect-ratio: 1;
@@ -351,10 +364,18 @@ textarea { min-height: 96px; resize: vertical; }
 
 @media (max-width: 900px) {
   .auth-wrap { grid-template-columns: 1fr; }
-  .auth-visual { min-height: 240px; }
-  .auth-globe { top: 1rem; width: min(68%, 360px); }
-  .auth-copy { margin: 0 24px 24px; padding-top: 220px; }
+  .auth-visual {
+    min-height: 360px;
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .auth-panel { align-items: flex-start; padding: 32px 24px 48px; }
+  .auth-globe { top: 1rem; width: min(76vw, 360px); }
+  .auth-copy { margin: 0 24px 28px; padding-top: 0; }
+  .auth-copy h1 { font-size: clamp(34px, 10vw, 48px); }
   .topbar { grid-template-columns: 1fr; }
   .list-card, .timeline-row, .feed-card, .charts { grid-template-columns: 1fr; }
   .two { grid-template-columns: 1fr; }
+  .trip-form { width: 100%; }
+  .trip-cover-preview { width: 100%; }
 }
