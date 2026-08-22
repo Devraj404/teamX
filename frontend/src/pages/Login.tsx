@@ -2,12 +2,13 @@ import { FormEvent, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Globe } from "../components/Globe";
 import { db } from "../db";
+import { api, saveToken } from "../api";
 
 export function LoginPage() {
   const navigate = useNavigate();
   const [error, setError] = useState("");
 
-  const onSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const form = new FormData(e.currentTarget);
     const username = String(form.get("username") || "").trim();
@@ -17,12 +18,14 @@ export function LoginPage() {
       return;
     }
     const remember = form.get("remember") === "on";
-    const user = db.login(username, password, remember);
-    if (!user) {
+    try {
+      const { token } = await api.login(username, password);
+      saveToken(token);
+    } catch {
       setError("Those credentials do not match an account.");
       return;
     }
-    navigate(user.role === "admin" ? "/admin" : "/");
+    navigate("/");
   };
 
   return (
@@ -46,7 +49,7 @@ export function LoginPage() {
             <input
               name="username"
               autoComplete="username"
-              defaultValue={db.rememberedUsername()}
+              defaultValue=""
               placeholder="aanya or aanya@example.com"
             />
           </label>
@@ -56,7 +59,7 @@ export function LoginPage() {
           </label>
           {error && <div className="alert">{error}</div>}
           <label className="remember-control">
-            <input name="remember" type="checkbox" defaultChecked={Boolean(db.rememberedUsername())} />
+            <input name="remember" type="checkbox" />
             <span>Remember me on this device</span>
           </label>
           <button className="btn" type="submit">

@@ -6,6 +6,7 @@ import authRoutes from "./routes/authRoutes.js";
 import cityRoutes from "./routes/cityRoutes.js";
 import tripRoutes from "./routes/tripRoutes.js";
 import activityRoutes from "./routes/activityRoutes.js";
+import publicTripRoutes from "./routes/publicTripRoutes.js";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -21,6 +22,7 @@ app.get("/", (req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/cities", cityRoutes);
 app.use("/api/activities", activityRoutes);
+app.use("/api/public/trips", publicTripRoutes);
 app.use("/api/trips", tripRoutes);
 
 app.use((req, res) => {

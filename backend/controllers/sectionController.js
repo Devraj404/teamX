@@ -100,6 +100,14 @@ export async function updateSection(req, res) {
     return res.status(400).json({ message: "startDate must be on or before endDate" });
   }
 
+  const trip = await findOwnedTrip(tripId, req.user.userId);
+  if (nextStartDate && trip?.startDate && new Date(nextStartDate) < new Date(trip.startDate)) {
+    return res.status(400).json({ message: "Section startDate must be within the trip dates" });
+  }
+  if (nextEndDate && trip?.endDate && new Date(nextEndDate) > new Date(trip.endDate)) {
+    return res.status(400).json({ message: "Section endDate must be within the trip dates" });
+  }
+
   if (cityId !== undefined) {
     const city = await prisma.city.findUnique({ where: { cityId } });
     if (!city) {
@@ -115,7 +123,7 @@ export async function updateSection(req, res) {
       ...(description !== undefined ? { description: description?.trim() || null } : {}),
       ...(startDate !== undefined ? { startDate: dateValue(startDate) } : {}),
       ...(endDate !== undefined ? { endDate: dateValue(endDate) } : {}),
-      ...(budget !== undefined ? { budget: budget || null } : {}),
+      ...(budget !== undefined ? { budget: budget ?? null } : {}),
     },
     include: sectionInclude,
   });

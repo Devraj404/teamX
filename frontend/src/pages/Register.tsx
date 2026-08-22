@@ -2,13 +2,14 @@ import { FormEvent, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Globe } from "../components/Globe";
 import { db } from "../db";
+import { api, saveToken } from "../api";
 
 export function RegisterPage() {
   const navigate = useNavigate();
   const [photo, setPhoto] = useState("");
   const [error, setError] = useState("");
 
-  const onSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const f = new FormData(e.currentTarget);
     const username = String(f.get("username") || "").trim();
@@ -18,25 +19,24 @@ export function RegisterPage() {
       setError("Username, password, and email are required.");
       return;
     }
-    if (db.getUserByUsername(username)) {
-      setError("That username is already taken.");
-      return;
+    try {
+      const { token } = await api.register({
+        username,
+        password,
+        email,
+        photo: photo || null,
+        firstName: String(f.get("first_name") || ""),
+        lastName: String(f.get("last_name") || ""),
+        phoneNumber: String(f.get("phone_number") || ""),
+        city: String(f.get("city") || ""),
+        country: String(f.get("country") || ""),
+        additionalInformation: String(f.get("additional_information") || ""),
+      });
+      saveToken(token);
+      navigate("/");
+    } catch (requestError) {
+      setError(requestError instanceof Error ? requestError.message : "Could not create account.");
     }
-    db.register({
-      username,
-      password,
-      photo:
-        photo ||
-        "https://images.unsplash.com/photo-1527980965255-d3b416303d12?auto=format&fit=crop&w=400&q=80",
-      first_name: String(f.get("first_name") || ""),
-      last_name: String(f.get("last_name") || ""),
-      email,
-      phone_number: String(f.get("phone_number") || ""),
-      city: String(f.get("city") || ""),
-      country: String(f.get("country") || ""),
-      additional_information: String(f.get("additional_information") || ""),
-    });
-    navigate("/");
   };
 
   return (

@@ -1,12 +1,11 @@
-import { useMemo } from "react";
-import { useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { api, type ApiBudget } from "../api";
 import { Page3D } from "../components/Motion";
-import { db, dayCount, money } from "../db";
-
-const cats = ["transport", "stay", "activities", "meals"] as const;
 
 export function BudgetPage() {
   const { id } = useParams();
+<<<<<<< HEAD
   const trip = db.trip(Number(id));
   const sections = trip ? db.sectionsForTrip(trip.trip_id) : [];
   const items = trip ? db.activitiesForTrip(trip.trip_id) : [];
@@ -29,9 +28,19 @@ export function BudgetPage() {
     const spent = db.activitiesForSection(s.section_id).reduce((a, x) => a + Number(x.expense), 0);
     return s.budget > 0 && spent > s.budget;
   });
+=======
+  const navigate = useNavigate();
+  const [budget, setBudget] = useState<ApiBudget | null>(null);
+  const [error, setError] = useState("");
+>>>>>>> e19fcbe00b3c6074d35b5fb318b2828c58b6fbfd
 
-  if (!trip) return <Page3D>Trip not found.</Page3D>;
+  useEffect(() => {
+    api.getBudget(Number(id))
+      .then(setBudget)
+      .catch((requestError) => setError(requestError instanceof Error ? requestError.message : "Could not load budget."));
+  }, [id]);
 
+<<<<<<< HEAD
   return (
     <Page3D>
       <h1>Trip budget & cost breakdown</h1>
@@ -106,4 +115,18 @@ export function BudgetPage() {
       </div>
     </Page3D>
   );
+=======
+  if (error) return <Page3D>{error}</Page3D>;
+  if (!budget) return <Page3D>Loading budget...</Page3D>;
+
+  return <Page3D>
+    <button className="chip" onClick={() => navigate(`/trips/${id}`)}>Back to itinerary</button>
+    <h1>Trip budget & cost breakdown</h1>
+    <p className="muted">Booked activities: ${budget.total.toFixed(2)} · Average per day: ${budget.averagePerDay?.toFixed(2) || "0.00"}</p>
+    <div className="grid" style={{ marginTop: 20 }}>
+      <section className="chart-box"><strong>By category</strong>{Object.entries(budget.byCategory).map(([category, amount]) => <div className="stat" key={category}><span>{category}</span><strong>${amount.toFixed(2)}</strong></div>)}</section>
+      <section className="chart-box"><strong>By section</strong>{budget.bySection.map((section) => <div className="stat" key={section.sectionId}><span>{section.city.cityName}</span><strong>${section.activityTotal.toFixed(2)}</strong></div>)}</section>
+    </div>
+  </Page3D>;
+>>>>>>> e19fcbe00b3c6074d35b5fb318b2828c58b6fbfd
 }

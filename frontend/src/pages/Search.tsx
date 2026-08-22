@@ -1,173 +1,162 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { api, type ApiActivity, type ApiCity } from "../api";
 import { Page3D } from "../components/Motion";
-import { db, money } from "../db";
+
+const fallbackImage = "https://images.unsplash.com/photo-1500534623283-312aade485b7?auto=format&fit=crop&w=800&q=80";
 
 export function SearchPage() {
   const [params, setParams] = useSearchParams();
   const navigate = useNavigate();
-  const q = (params.get("q") || "").toLowerCase();
-  const tab = params.get("tab") || "cities";
-  const sort = params.get("sort") || "popularity";
-  const filter = params.get("filter") || "all";
-  const group = params.get("group") || "none";
+  const q = params.get("q") || "";
+  const tab = params.get("tab") || (params.get("section") ? "activities" : "cities");
   const tripId = Number(params.get("trip") || 0);
   const sectionId = Number(params.get("section") || 0);
+  const [cities, setCities] = useState<ApiCity[]>([]);
+  const [activities, setActivities] = useState<ApiActivity[]>([]);
   const [type, setType] = useState("all");
   const [maxCost, setMaxCost] = useState(200);
-  const [region, setRegion] = useState("all");
-  const regions = [...new Set(db.cities().map((city) => city.region))].sort();
+  const [maxDuration, setMaxDuration] = useState(24);
+  const [selectedState, setSelectedState] = useState("all");
+  const [selectedCityId, setSelectedCityId] = useState<number | null>(null);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
 
-  const cities = useMemo(() => {
-    let list = db.cities().filter(
-      (c) =>
-        !q ||
-        c.city_name.toLowerCase().includes(q) ||
-        c.country.toLowerCase().includes(q) ||
-        c.region.toLowerCase().includes(q),
-    );
-    if (filter === "popular") list = list.filter((c) => c.popularity >= 88);
-    if (region !== "all") list = list.filter((c) => c.region === region);
-    if (sort === "cost") list = [...list].sort((a, b) => a.cost_index - b.cost_index);
-    else list = [...list].sort((a, b) => b.popularity - a.popularity);
-    return list;
-  }, [q, sort, filter]);
+  useEffect(() => {
+    setLoading(true);
+    Promise.all([
+      api.cities(),
+      tripId ? api.trip(tripId) : Promise.resolve(null),
+      api.activities(`?${new URLSearchParams({
+        ...(q ? { q } : {}),
+        ...(type !== "all" ? { type: type.toLowerCase() } : {}),
+        ...(maxCost > 200 ? { maxCost: String(maxCost) } : {}),
+        ...(maxDuration < 24 ? { maxDuration: String(maxDuration) } : {}),
+        ...(selectedCityId ? { cityId: String(selectedCityId) } : {}),
+      })}`),
+    ])
+      .then(([cityResponse, tripResponse, activityResponse]) => {
+        setCities(cityResponse.cities);
+        const sectionCityId = tripResponse?.trip.sections.find((section) => section.sectionId === sectionId)?.cityId;
+        if (sectionCityId && selectedCityId !== sectionCityId) setSelectedCityId(sectionCityId);
+        setActivities(activityResponse.activities);
+      })
+      .catch((requestError) => setError(requestError instanceof Error ? requestError.message : "Could not load search results."))
+      .finally(() => setLoading(false));
+  }, [q, type, maxCost, maxDuration, selectedCityId, tripId, sectionId]);
 
-  const activities = useMemo(() => {
-    return db
-      .activities()
-      .filter((a) => {
-        const city = db.city(a.city_id);
-        const hay = `${a.activity_name} ${a.description} ${city?.city_name} ${a.type}`.toLowerCase();
-        const okQ = !q || hay.includes(q);
-        const okType = type === "all" || a.type === type;
-        const okCost = a.cost <= maxCost;
-        return okQ && okType && okCost;
-      });
-  }, [q, type, maxCost]);
+  const states = useMemo(
+    () => [...new Set(cities.map((city) => city.region).filter((region): region is string => Boolean(region)))].sort(),
+    [cities],
+  );
+  const stateCities = useMemo(
+    () => cities.filter((city) => selectedState === "all" || city.region === selectedState),
+    [cities, selectedState],
+  );
+  const visibleCities = useMemo(
+    () => stateCities,
+    [stateCities],
+  );
 
-  const grouped = group === "region"
-    ? Object.entries(
-        cities.reduce<Record<string, typeof cities>>((acc, c) => {
-          acc[c.region] = acc[c.region] || [];
-          acc[c.region].push(c);
-          return acc;
-        }, {}),
-      )
-    : [["All", cities] as const];
-
-  const addCityToTrip = (cityId: number) => {
-    if (!tripId) {
-      navigate("/trips/new");
-      return;
+  const addCityToTrip = async (cityId: number) => {
+    if (!tripId) return navigate("/trips/new");
+    try {
+      const { trip } = await api.trip(tripId);
+      await api.createSection(tripId, { cityId, sectionOrder: trip.sections.length + 1 });
+      navigate(`/trips/${tripId}/build`);
+    } catch (requestError) {
+      setError(requestError instanceof Error ? requestError.message : "Could not add city to trip.");
     }
-    const city = db.city(cityId)!;
-    const trip = db.trip(tripId)!;
-    db.saveSection({
-      trip_id: tripId,
-      section_order: db.sectionsForTrip(tripId).length + 1,
-      description: `${city.city_name}, ${city.country}`,
-      start_date: trip.start_date,
-      end_date: trip.end_date,
-      budget: 0,
-      city_id: city.city_id,
-    });
-    navigate(`/trips/${tripId}/build`);
   };
 
-  const addActivity = (activityId: number) => {
-    const activity = db.activities().find((a) => a.activity_id === activityId)!;
-    const sid = sectionId || db.sectionsForTrip(tripId)[0]?.section_id;
-    if (!tripId || !sid) {
-      navigate("/trips/new");
+  const addActivity = async (activity: ApiActivity) => {
+    if (!tripId || !sectionId) {
+      setError("Open an itinerary section before assigning an activity.");
       return;
     }
-    db.saveSectionActivity({
-      section_id: sid,
-      activity_id: activity.activity_id,
-      activity_order: db.activitiesForSection(sid).length + 1,
-      activity_date: db.sectionsForTrip(tripId).find((s) => s.section_id === sid)?.start_date || "",
-      activity_name: activity.activity_name,
-      expense: activity.cost,
-      category: activity.type === "Food" ? "meals" : "activities",
-    });
-    navigate(`/trips/${tripId}/build`);
+    try {
+      await api.createSectionActivity(tripId, sectionId, {
+        activityId: activity.activityId,
+        expense: Number(activity.cost || 0),
+        expenseCategory: activity.type === "food" ? "meals" : "activities",
+      });
+      navigate(`/trips/${tripId}/build`);
+    } catch (requestError) {
+      setError(requestError instanceof Error ? requestError.message : "Could not assign activity.");
+    }
   };
 
   return (
     <Page3D>
       <h1>Search</h1>
-      <p className="muted">Cities with country, cost index, and popularity — or activities by type, cost, and duration.</p>
+      <p className="muted">Discover cities and activities from the live travel catalog.</p>
       <div className="search-cluster" style={{ margin: "16px 0 20px" }}>
         <input
-          defaultValue={params.get("q") || ""}
-          placeholder="Option and its details…"
-          onKeyDown={(e) => {
-            if (e.key === "Enter") setParams({ ...Object.fromEntries(params), q: e.currentTarget.value, tab });
+          defaultValue={q}
+          placeholder="Search cities and activities..."
+          onKeyDown={(event) => {
+            if (event.key === "Enter") setParams({ ...Object.fromEntries(params), q: event.currentTarget.value, tab });
           }}
         />
-          <button className="chip" onClick={() => setParams({ ...Object.fromEntries(params), tab: "cities" })}>Cities</button>
-        <button className="chip" onClick={() => setParams({ ...Object.fromEntries(params), tab: "activities" })}>
-          Activities
-        </button>
+        <button className="chip" onClick={() => setParams({ ...Object.fromEntries(params), tab: "cities" })}>Cities</button>
+        <button className="chip" onClick={() => setParams({ ...Object.fromEntries(params), tab: "activities" })}>Activities</button>
       </div>
-
-      {tab === "cities" ? (
+      {error && <div className="alert">{error}</div>}
+      {loading ? <p className="muted">Loading live results...</p> : tab === "cities" ? (
         <div className="grid">
           <label style={{ maxWidth: 280 }}>
-            Filter by region
-            <select value={region} onChange={(e) => setRegion(e.target.value)}>
-              <option value="all">All regions</option>
-              {regions.map((item) => <option key={item}>{item}</option>)}
+            Select state
+            <select value={selectedState} onChange={(event) => setSelectedState(event.target.value)}>
+              <option value="all">All states</option>
+              {states.map((item) => <option key={item} value={item}>{item}</option>)}
             </select>
           </label>
-          {grouped.map(([label, list]) => (
-            <section key={label}>
-              {group === "region" && <h3>{label}</h3>}
-              {list.map((city) => (
-                <article key={city.city_id} className="card list-card">
-                  <img src={city.image} alt="" />
-                  <div>
-                    <strong>{city.city_name}</strong>
-                    <div className="muted">
-                      {city.country} · {city.region} · cost index {city.cost_index} · popularity {city.popularity}
-                    </div>
-                  </div>
-                  <button className="btn" onClick={() => addCityToTrip(city.city_id)}>
-                    Add to trip
-                  </button>
-                </article>
-              ))}
-            </section>
+          {visibleCities.map((city) => (
+            <article key={city.cityId} className="card list-card">
+              <img src={fallbackImage} alt="" />
+              <div>
+                <strong>{city.cityName}</strong>
+                <div className="muted">{city.country || ""} · {city.region || ""} · cost index {city.costIndex ?? "-"} · popularity {city.popularity ?? "-"}</div>
+              </div>
+              <button className="btn" onClick={() => addCityToTrip(city.cityId)}>Add to trip</button>
+            </article>
           ))}
         </div>
       ) : (
         <>
           <div className="tabs" style={{ marginBottom: 16 }}>
-            {["all", "Culture", "Food", "Adventure"].map((t) => (
-              <button key={t} className="chip" onClick={() => setType(t)}>
-                {t}
-              </button>
+            <label className="muted">State
+              <select value={selectedState} onChange={(event) => { setSelectedState(event.target.value); setSelectedCityId(null); }}>
+                <option value="all">All states</option>
+                {states.map((state) => <option key={state} value={state}>{state}</option>)}
+              </select>
+            </label>
+            <label className="muted">Stop / city
+              <select value={selectedCityId || ""} onChange={(event) => setSelectedCityId(Number(event.target.value) || null)}>
+                <option value="">Select a city</option>
+                {stateCities.map((city) => <option key={city.cityId} value={city.cityId}>{city.cityName}</option>)}
+              </select>
+            </label>
+            {[["all", "All"], ["sightseeing", "Sightseeing"], ["food", "Food"], ["adventure", "Adventure"], ["other", "Other"]].map(([value, label]) => (
+              <button key={value} className="chip" onClick={() => setType(value)}>{label}</button>
             ))}
-            <label className="muted">
-              Max cost {money(maxCost)}
-              <input type="range" min={10} max={200} value={maxCost} onChange={(e) => setMaxCost(Number(e.target.value))} />
+            <label className="muted">Max cost {maxCost === 200 ? "No limit" : `INR ${maxCost}`}
+              <input type="range" min={200} max={10000} step={100} value={maxCost} onChange={(event) => setMaxCost(Number(event.target.value))} />
+            </label>
+            <label className="muted">Max duration {maxDuration === 24 ? "No limit" : `${maxDuration}h`}
+              <input type="range" min={1} max={24} value={maxDuration} onChange={(event) => setMaxDuration(Number(event.target.value))} />
             </label>
           </div>
           <div className="grid">
-            {activities.map((a) => (
-              <article key={a.activity_id} className="card list-card">
-                <img src={a.image} alt="" />
+            {activities.map((activity) => (
+              <article key={activity.activityId} className="card list-card">
+                <img src={fallbackImage} alt="" />
                 <div>
-                  <strong>{a.activity_name}</strong>
-                  <div className="muted">
-                    {db.city(a.city_id)?.city_name} · {a.type} · {a.duration_hours}h · {money(a.cost)}
-                  </div>
-                  <p>{a.description}</p>
+                  <strong>{activity.activityName}</strong>
+                  <div className="muted">{activity.city?.cityName || ""} · {activity.type} · {activity.duration ?? "-"}h · ${Number(activity.cost || 0).toFixed(2)}</div>
+                  <p>{activity.description}</p>
                 </div>
-                <button className="btn" onClick={() => addActivity(a.activity_id)}>
-                  Add / assign
-                </button>
+                <button className="btn" onClick={() => addActivity(activity)}>Add / assign</button>
               </article>
             ))}
           </div>

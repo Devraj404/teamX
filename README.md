@@ -54,10 +54,15 @@ npm run db:up
 npm run db:migrate
 npm run db:generate
 npm run db:seed
+npm run db:seed:cities
 npm run db:studio
 ```
 
 `db:up` starts the local PostgreSQL container. `db:migrate` applies Prisma migrations. `db:seed` adds repeatable sample cities and activities. Prisma Studio opens a browser database viewer, normally at `http://localhost:5555`.
+
+`db:seed:cities` adds ten repeatable Indian cities and their city-linked famous places/experiences as catalog activities. It does not create or modify trips, itinerary sections, or section activities.
+
+The Ahmedabad catalog is based on landmark listings from [Gujarat Tourism](https://www.gujarattourism.com/central-zone/ahmedabad.html), including Sabarmati Ashram, Sabarmati Riverfront, the Heritage Walk, Hutheesing Jain Temple, Kankaria Lake, Manek Chowk, and Adalaj Ni Vav. Prices in seed data are planning estimates, not live ticket prices.
 
 To stop the local database:
 
@@ -138,6 +143,7 @@ GET    /api/trips/:tripId
 PATCH  /api/trips/:tripId
 DELETE /api/trips/:tripId
 GET    /api/trips/:tripId/budget
+GET    /api/public/trips/:tripId
 ```
 
 Trip status is calculated from dates as `upcoming`, `ongoing`, or `completed`. Users can only access and modify their own trips.
@@ -171,6 +177,8 @@ GET /api/trips/:tripId/budget
 ```
 
 The budget is calculated from itinerary activity expenses and includes totals by activity type and section. No summary values are stored separately.
+
+Expense categories are `transport`, `accommodation`, `activities`, `meals`, and `other`. The budget response also includes category totals and average cost per trip day. Public trip reads are read-only and available only when the trip has `isPublic` set to `true`.
 
 ## Data Model
 

@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { Shell } from "./components/Shell";
-import { db } from "./db";
+import { api, type ApiUser } from "./api";
 import { AdminPage } from "./pages/Admin";
 import { BudgetPage } from "./pages/Budget";
 import { BuildItineraryPage } from "./pages/BuildItinerary";
@@ -20,24 +20,47 @@ import { SearchPage } from "./pages/Search";
 import { SharePage } from "./pages/Share";
 import type { User } from "./types";
 
+function frontendUser(user: ApiUser): User {
+  return {
+    user_id: user.userId,
+    username: user.username,
+    password: "",
+    photo: user.photo || "",
+    first_name: user.firstName || "",
+    last_name: user.lastName || "",
+    email: user.email || "",
+    phone_number: user.phoneNumber || "",
+    city: user.city || "",
+    country: user.country || "",
+    additional_information: user.additionalInformation || "",
+    role: "traveler",
+  };
+}
+
 function RequireAuth({
   user,
+  authReady,
   children,
 }: {
   user: User | null;
+  authReady?: boolean;
   children: React.ReactNode;
 }) {
+  if (authReady === false) return null;
   if (!user) return <Navigate to="/login" replace />;
   return <Shell user={user}>{children}</Shell>;
 }
 
 function RequireAdmin({
   user,
+  authReady,
   children,
 }: {
   user: User | null;
+  authReady?: boolean;
   children: React.ReactNode;
 }) {
+  if (authReady === false) return null;
   if (!user) return <Navigate to="/login" replace />;
   if (user.role !== "admin") return <Navigate to="/" replace />;
   return <Shell user={user}>{children}</Shell>;
@@ -46,7 +69,32 @@ function RequireAdmin({
 export function App() {
   const location = useLocation();
   const [, setTick] = useState(0);
-  const user = db.currentUser();
+  const [user, setUser] = useState<User | null>(null);
+  const [authReady, setAuthReady] = useState(false);
+
+  useEffect(() => {
+    const loadUser = () => {
+      setAuthReady(false);
+      if (!api.token()) {
+        setUser(null);
+        setAuthReady(true);
+        return;
+      }
+      api.me()
+        .then(({ user: apiUser }) => {
+          setUser(frontendUser(apiUser));
+          setAuthReady(true);
+        })
+        .catch(() => {
+          api.clearToken();
+          setUser(null);
+          setAuthReady(true);
+        });
+    };
+    loadUser();
+    window.addEventListener("globetrotter-auth-changed", loadUser);
+    return () => window.removeEventListener("globetrotter-auth-changed", loadUser);
+  }, []);
 
   return (
     <>
@@ -69,7 +117,7 @@ export function App() {
           <Route
             path="/"
             element={
-              <RequireAuth user={user}>
+              <RequireAuth user={user} authReady={authReady}>
                 {user && <DashboardPage user={user} />}
               </RequireAuth>
             }
@@ -77,7 +125,7 @@ export function App() {
           <Route
             path="/trips"
             element={
-              <RequireAuth user={user}>
+              <RequireAuth user={user} authReady={authReady}>
                 {user && <MyTripsPage user={user} />}
               </RequireAuth>
             }
@@ -85,7 +133,7 @@ export function App() {
           <Route
             path="/trips/new"
             element={
-              <RequireAuth user={user}>
+              <RequireAuth user={user} authReady={authReady}>
                 {user && <CreateTripPage user={user} />}
               </RequireAuth>
             }
@@ -93,7 +141,7 @@ export function App() {
           <Route
             path="/trips/:id"
             element={
-              <RequireAuth user={user}>
+              <RequireAuth user={user} authReady={authReady}>
                 <ItineraryViewPage />
               </RequireAuth>
             }
@@ -101,7 +149,7 @@ export function App() {
           <Route
             path="/trips/:id/build"
             element={
-              <RequireAuth user={user}>
+              <RequireAuth user={user} authReady={authReady}>
                 <BuildItineraryPage />
               </RequireAuth>
             }
@@ -109,7 +157,7 @@ export function App() {
           <Route
             path="/trips/:id/budget"
             element={
-              <RequireAuth user={user}>
+              <RequireAuth user={user} authReady={authReady}>
                 <BudgetPage />
               </RequireAuth>
             }
@@ -117,7 +165,7 @@ export function App() {
           <Route
             path="/trips/:id/calendar"
             element={
-              <RequireAuth user={user}>
+              <RequireAuth user={user} authReady={authReady}>
                 {user && <CalendarPage user={user} />}
               </RequireAuth>
             }
@@ -125,7 +173,7 @@ export function App() {
           <Route
             path="/search"
             element={
-              <RequireAuth user={user}>
+              <RequireAuth user={user} authReady={authReady}>
                 <SearchPage />
               </RequireAuth>
             }
@@ -133,7 +181,7 @@ export function App() {
           <Route
             path="/community"
             element={
-              <RequireAuth user={user}>
+              <RequireAuth user={user} authReady={authReady}>
                 {user && <CommunityPage user={user} />}
               </RequireAuth>
             }
@@ -141,7 +189,7 @@ export function App() {
           <Route
             path="/calendar"
             element={
-              <RequireAuth user={user}>
+              <RequireAuth user={user} authReady={authReady}>
                 {user && <CalendarPage user={user} />}
               </RequireAuth>
             }
@@ -149,7 +197,7 @@ export function App() {
           <Route
             path="/profile"
             element={
-              <RequireAuth user={user}>
+              <RequireAuth user={user} authReady={authReady}>
                 {user && <ProfilePage user={user} onChange={() => setTick((n) => n + 1)} />}
               </RequireAuth>
             }
@@ -157,7 +205,7 @@ export function App() {
           <Route
             path="/admin"
             element={
-              <RequireAdmin user={user}>
+              <RequireAdmin user={user} authReady={authReady}>
                 {user && <AdminPage />}
               </RequireAdmin>
             }
