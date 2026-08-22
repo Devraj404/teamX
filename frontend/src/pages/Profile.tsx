@@ -1,32 +1,35 @@
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Page3D, TiltCard } from "../components/Motion";
-import { db, tripStatus } from "../db";
+import { api, type ApiTrip } from "../api";
 import type { User } from "../types";
 
 export function ProfilePage({ user, onChange }: { user: User; onChange: () => void }) {
   const navigate = useNavigate();
-  const trips = db.tripsByUser(user.user_id);
-  const planned = trips.filter((t) => tripStatus(t) !== "Completed");
-  const previous = trips.filter((t) => tripStatus(t) === "Completed");
+  const [trips, setTrips] = useState<ApiTrip[]>([]);
+  const [cities, setCities] = useState<{ cityId: number; cityName: string; country: string | null }[]>([]);
+  const [error, setError] = useState("");
+  const planned = trips.filter((t) => t.status !== "completed");
+  const previous = trips.filter((t) => t.status === "completed");
   const [lang, setLang] = useState(localStorage.getItem("gt.lang") || "English");
 
-  const save = (e: FormEvent<HTMLFormElement>) => {
+  useEffect(() => {
+    Promise.all([api.trips(), api.cities()]).then(([tripResponse, cityResponse]) => {
+      setTrips(tripResponse.trips);
+      setCities(cityResponse.cities);
+    }).catch(() => setError("Could not load profile data."));
+  }, []);
+
+  const save = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const f = new FormData(e.currentTarget);
-    db.updateUser({
-      ...user,
-      photo: user.photo,
-      first_name: String(f.get("first_name")),
-      last_name: String(f.get("last_name")),
-      email: String(f.get("email")),
-      phone_number: String(f.get("phone_number")),
-      city: String(f.get("city")),
-      country: String(f.get("country")),
-      additional_information: String(f.get("additional_information")),
-    });
-    localStorage.setItem("gt.lang", lang);
-    onChange();
+    try {
+      await api.updateMe({ firstName: String(f.get("first_name") || ""), lastName: String(f.get("last_name") || ""), email: String(f.get("email") || ""), phoneNumber: String(f.get("phone_number") || ""), city: String(f.get("city") || ""), country: String(f.get("country") || ""), additionalInformation: String(f.get("additional_information") || "") });
+      localStorage.setItem("gt.lang", lang);
+      onChange();
+    } catch (requestError) {
+      setError(requestError instanceof Error ? requestError.message : "Could not update profile.");
+    }
   };
 
   return (
@@ -43,6 +46,7 @@ export function ProfilePage({ user, onChange }: { user: User; onChange: () => vo
         </div>
       </div>
       <form className="form wide" style={{ marginTop: 24 }} onSubmit={save}>
+        {error && <div className="alert">{error}</div>}
         <div className="two">
           <label>First name<input name="first_name" defaultValue={user.first_name} /></label>
           <label>Last name<input name="last_name" defaultValue={user.last_name} /></label>
@@ -70,11 +74,11 @@ export function ProfilePage({ user, onChange }: { user: User; onChange: () => vo
       <h2 style={{ marginTop: 32 }}>Preplanned trips</h2>
       <div className="row-scroll">
         {planned.map((t) => (
-          <TiltCard key={t.trip_id}>
-            <img className="cover" src={t.cover_photo} alt="" />
+          <TiltCard key={t.tripId}>
+            <img className="cover" src={t.coverPhoto || ""} alt="" />
             <div className="body">
-              <strong>{t.trip_name}</strong>
-              <button className="chip" onClick={() => navigate(`/trips/${t.trip_id}`)}>View</button>
+              <strong>{t.tripName}</strong>
+              <button className="chip" onClick={() => navigate(`/trips/${t.tripId}`)}>View</button>
             </div>
           </TiltCard>
         ))}
@@ -82,21 +86,20 @@ export function ProfilePage({ user, onChange }: { user: User; onChange: () => vo
       <h2 style={{ marginTop: 24 }}>Previous trips</h2>
       <div className="row-scroll">
         {(previous.length ? previous : trips).map((t) => (
-          <TiltCard key={t.trip_id}>
-            <img className="cover" src={t.cover_photo} alt="" />
+          <TiltCard key={t.tripId}>
+            <img className="cover" src={t.coverPhoto || ""} alt="" />
             <div className="body">
-              <strong>{t.trip_name}</strong>
-              <button className="chip" onClick={() => navigate(`/trips/${t.trip_id}`)}>View</button>
+              <strong>{t.tripName}</strong>
+              <button className="chip" onClick={() => navigate(`/trips/${t.tripId}`)}>View</button>
             </div>
           </TiltCard>
         ))}
       </div>
       <h2 style={{ marginTop: 24 }}>Saved destinations</h2>
       <div className="row-scroll">
-        {db.cities().slice(0, 6).map((c) => (
-          <TiltCard key={c.city_id} onClick={() => navigate(`/search?q=${c.city_name}`)}>
-            <img className="cover" src={c.image} alt="" />
-            <div className="body">{c.city_name}</div>
+        {cities.slice(0, 6).map((c) => (
+          <TiltCard key={c.cityId} onClick={() => navigate(`/search?q=${c.cityName}`)}>
+            <div className="body">{c.cityName}</div>
           </TiltCard>
         ))}
       </div>
@@ -104,11 +107,7 @@ export function ProfilePage({ user, onChange }: { user: User; onChange: () => vo
         className="chip"
         style={{ marginTop: 24 }}
         onClick={() => {
-          if (confirm("Delete this account from the local demo database?")) {
-            db.deleteUser(user.user_id);
-            db.logout();
-            navigate("/register");
-          }
+          if (confirm("Delete this account?")) api.deleteMe().then(() => { api.logout(); navigate("/register"); }).catch(() => setError("Could not delete account."));
         }}
       >
         Delete account

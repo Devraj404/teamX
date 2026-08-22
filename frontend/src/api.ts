@@ -68,13 +68,24 @@ export type ApiActivity = {
   city?: ApiCity;
 };
 
+export type ApiPost = {
+  postId: number;
+  userId: number;
+  content: string;
+  createdAt: string;
+  user?: ApiUser;
+};
+
 export type ApiBudget = {
   tripId: number;
   total: number;
   byType: Record<string, number>;
   byCategory: Record<string, number>;
   averagePerDay: number | null;
-  bySection: Array<{ sectionId: number; city: ApiCity; budget: number | null; activityTotal: number }>;
+  plannedBudget: number;
+  remainingBudget: number;
+  isOverBudget: boolean;
+  bySection: Array<{ sectionId: number; city: ApiCity; budget: number | null; activityTotal: number; remainingBudget: number | null; isOverBudget: boolean }>;
 };
 
 type ApiOptions = RequestInit & { auth?: boolean };
@@ -123,6 +134,8 @@ export const api = {
       body: JSON.stringify(payload),
     }),
   me: () => request<{ user: ApiUser }>("/auth/me", { auth: true }),
+  updateMe: (payload: Record<string, unknown>) => request<{ user: ApiUser }>("/auth/me", { method: "PATCH", auth: true, body: JSON.stringify(payload) }),
+  deleteMe: () => request<void>("/auth/me", { method: "DELETE", auth: true }),
   cities: () => request<{ cities: ApiCity[] }>("/cities"),
   trips: () => request<{ trips: ApiTrip[] }>("/trips", { auth: true }),
   trip: (tripId: number) => request<{ trip: ApiTrip }>(`/trips/${tripId}`, { auth: true }),
@@ -157,6 +170,15 @@ export const api = {
   publicTrip: (tripId: number) => request<{ trip: ApiTrip }>(`/public/trips/${tripId}`),
   deleteTrip: (tripId: number) =>
     request<void>(`/trips/${tripId}`, { method: "DELETE", auth: true }),
+  posts: () => request<{ posts: ApiPost[] }>("/posts"),
+  createPost: (content: string) =>
+    request<{ post: ApiPost }>("/posts", {
+      method: "POST",
+      auth: true,
+      body: JSON.stringify({ content }),
+    }),
+  deletePost: (postId: number) =>
+    request<void>(`/posts/${postId}`, { method: "DELETE", auth: true }),
   logout: () => {
     api.clearToken();
     window.dispatchEvent(new Event("globetrotter-auth-changed"));

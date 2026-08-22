@@ -7,6 +7,7 @@ import cityRoutes from "./routes/cityRoutes.js";
 import tripRoutes from "./routes/tripRoutes.js";
 import activityRoutes from "./routes/activityRoutes.js";
 import publicTripRoutes from "./routes/publicTripRoutes.js";
+import postRoutes from "./routes/postRoutes.js";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -24,6 +25,7 @@ app.use("/api/cities", cityRoutes);
 app.use("/api/activities", activityRoutes);
 app.use("/api/public/trips", publicTripRoutes);
 app.use("/api/trips", tripRoutes);
+app.use("/api/posts", postRoutes);
 
 app.use((req, res) => {
   res.status(404).json({ message: "Route not found" });

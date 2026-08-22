@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+import { hashPassword } from "../utils/password.js";
 
 const prisma = new PrismaClient();
 
@@ -101,7 +102,231 @@ async function main() {
     }
   }
 
-  console.log(`Seed complete: ${cityCount} Indian cities and ${activityCount} catalog activities.`);
+  // Seed Demo Users
+  const hashedPassword = await hashPassword("travel123");
+  const usersData = [
+    {
+      username: "aanya",
+      password: hashedPassword,
+      email: "aanya@example.com",
+      firstName: "Aanya",
+      lastName: "Sharma",
+      city: "Mumbai",
+      country: "India",
+      photo: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=200&q=80",
+    },
+    {
+      username: "rohan",
+      password: hashedPassword,
+      email: "rohan@example.com",
+      firstName: "Rohan",
+      lastName: "Verma",
+      city: "Delhi",
+      country: "India",
+      photo: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80",
+    },
+    {
+      username: "priya",
+      password: hashedPassword,
+      email: "priya@example.com",
+      firstName: "Priya",
+      lastName: "Patel",
+      city: "Ahmedabad",
+      country: "India",
+      photo: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80",
+    },
+  ];
+
+  const createdUsers = [];
+  for (const u of usersData) {
+    const existing = await prisma.user.findUnique({ where: { username: u.username } });
+    if (existing) {
+      createdUsers.push(existing);
+    } else {
+      const user = await prisma.user.create({ data: u });
+      createdUsers.push(user);
+    }
+  }
+
+  const aanya = createdUsers[0];
+  const rohan = createdUsers[1];
+  const priya = createdUsers[2];
+
+  // Fetch some cities for trip sections
+  const delhi = await prisma.city.findFirst({ where: { cityName: "Delhi" } });
+  const jaipur = await prisma.city.findFirst({ where: { cityName: "Jaipur" } });
+  const udaipur = await prisma.city.findFirst({ where: { cityName: "Udaipur" } });
+  const kochi = await prisma.city.findFirst({ where: { cityName: "Kochi" } });
+  const munnar = await prisma.city.findFirst({ where: { cityName: "Munnar" } });
+  const alleppey = await prisma.city.findFirst({ where: { cityName: "Alleppey" } });
+  const mumbai = await prisma.city.findFirst({ where: { cityName: "Mumbai" } });
+  const lonavala = await prisma.city.findFirst({ where: { cityName: "Lonavala" } });
+
+  // Seed Sample Trips for Aanya
+  if (aanya && delhi && jaipur && udaipur) {
+    const trip1Existing = await prisma.trip.findFirst({ where: { userId: aanya.userId, tripName: "Golden Triangle Expedition" } });
+    if (!trip1Existing) {
+      const trip1 = await prisma.trip.create({
+        data: {
+          userId: aanya.userId,
+          tripName: "Golden Triangle Expedition",
+          description: "A 2-week heritage adventure exploring Delhi, Jaipur, and Udaipur.",
+          startDate: new Date("2026-09-05"),
+          endDate: new Date("2026-09-18"),
+          coverPhoto: "https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&w=800&q=80",
+          isPublic: true,
+        },
+      });
+
+      await prisma.tripSection.createMany({
+        data: [
+          {
+            tripId: trip1.tripId,
+            cityId: delhi.cityId,
+            sectionOrder: 1,
+            description: "Old Delhi Heritage & Red Fort Tour",
+            startDate: new Date("2026-09-05"),
+            endDate: new Date("2026-09-09"),
+            budget: 500,
+          },
+          {
+            tripId: trip1.tripId,
+            cityId: jaipur.cityId,
+            sectionOrder: 2,
+            description: "Pink City, Amber Fort & Chokhi Dhani",
+            startDate: new Date("2026-09-09"),
+            endDate: new Date("2026-09-14"),
+            budget: 800,
+          },
+          {
+            tripId: trip1.tripId,
+            cityId: udaipur.cityId,
+            sectionOrder: 3,
+            description: "Lakeside Relaxation & City Palace",
+            startDate: new Date("2026-09-14"),
+            endDate: new Date("2026-09-18"),
+            budget: 600,
+          },
+        ],
+      });
+    }
+  }
+
+  if (aanya && kochi && munnar && alleppey) {
+    const trip2Existing = await prisma.trip.findFirst({ where: { userId: aanya.userId, tripName: "Kerala Backwaters & Hills" } });
+    if (!trip2Existing) {
+      const trip2 = await prisma.trip.create({
+        data: {
+          userId: aanya.userId,
+          tripName: "Kerala Backwaters & Hills",
+          description: "Relaxing tropical tour with tea gardens and houseboat stay.",
+          startDate: new Date("2026-10-01"),
+          endDate: new Date("2026-10-10"),
+          coverPhoto: "https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&w=800&q=80",
+          isPublic: true,
+        },
+      });
+
+      await prisma.tripSection.createMany({
+        data: [
+          {
+            tripId: trip2.tripId,
+            cityId: kochi.cityId,
+            sectionOrder: 1,
+            description: "Fort Kochi, spice markets & Kathakali show",
+            startDate: new Date("2026-10-01"),
+            endDate: new Date("2026-10-04"),
+            budget: 400,
+          },
+          {
+            tripId: trip2.tripId,
+            cityId: munnar.cityId,
+            sectionOrder: 2,
+            description: "Munnar Tea Plantations & Eravikulam Trek",
+            startDate: new Date("2026-10-04"),
+            endDate: new Date("2026-10-07"),
+            budget: 500,
+          },
+          {
+            tripId: trip2.tripId,
+            cityId: alleppey.cityId,
+            sectionOrder: 3,
+            description: "Alleppey backwater houseboat cruise",
+            startDate: new Date("2026-10-07"),
+            endDate: new Date("2026-10-10"),
+            budget: 700,
+          },
+        ],
+      });
+    }
+  }
+
+  if (aanya && mumbai && lonavala) {
+    const trip3Existing = await prisma.trip.findFirst({ where: { userId: aanya.userId, tripName: "Monsoon Escape to Lonavala" } });
+    if (!trip3Existing) {
+      const trip3 = await prisma.trip.create({
+        data: {
+          userId: aanya.userId,
+          tripName: "Monsoon Escape to Lonavala",
+          description: "Quick monsoon weekend trip starting from Mumbai.",
+          startDate: new Date("2026-08-10"),
+          endDate: new Date("2026-08-18"),
+          coverPhoto: "https://images.unsplash.com/photo-1570168007204-dfb528c6958f?auto=format&fit=crop&w=800&q=80",
+          isPublic: true,
+        },
+      });
+
+      await prisma.tripSection.createMany({
+        data: [
+          {
+            tripId: trip3.tripId,
+            cityId: mumbai.cityId,
+            sectionOrder: 1,
+            description: "Colaba walk & Marine Drive sunset",
+            startDate: new Date("2026-08-10"),
+            endDate: new Date("2026-08-14"),
+            budget: 450,
+          },
+          {
+            tripId: trip3.tripId,
+            cityId: lonavala.cityId,
+            sectionOrder: 2,
+            description: "Tiger's Point trek & Bhushi Dam monsoon waterfalls",
+            startDate: new Date("2026-08-14"),
+            endDate: new Date("2026-08-18"),
+            budget: 350,
+          },
+        ],
+      });
+    }
+  }
+
+  // Seed Community Posts
+  const existingPosts = await prisma.communityPost.count();
+  if (existingPosts === 0 && aanya && rohan && priya) {
+    await prisma.communityPost.createMany({
+      data: [
+        {
+          userId: aanya.userId,
+          content: "Just finalized our September itinerary across Delhi, Jaipur, and Udaipur! Excited for the sunrise hot air balloon over Amber Fort 🎈",
+        },
+        {
+          userId: rohan.userId,
+          content: "If you're visiting Alleppey, don't skip the night backwater houseboat cruise. Fresh Karimeen fry on board is unforgettable 🐟",
+        },
+        {
+          userId: priya.userId,
+          content: "Quick weekend trip to Lonavala during monsoons. Bhushi dam and Tiger's point fog was stunning! 🌧️⛰️",
+        },
+        {
+          userId: rohan.userId,
+          content: "Old Delhi street food recommendation: Rabri Paratha in Chandni Chowk and Jalebi at Dariba Kalan! 😋",
+        },
+      ],
+    });
+  }
+
+  console.log(`Seed complete: ${cityCount} Indian cities, ${activityCount} catalog activities, demo users, sample trips with section dates, and community posts.`);
 }
 
 main()

@@ -1,8 +1,7 @@
 import { FormEvent, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Page3D, TiltCard } from "../components/Motion";
-import { db } from "../db";
-import { api, type ApiCity } from "../api";
+import { api, type ApiActivity, type ApiCity } from "../api";
 import type { User } from "../types";
 
 export function CreateTripPage({ user }: { user: User }) {
@@ -11,11 +10,13 @@ export function CreateTripPage({ user }: { user: User }) {
   const [cover, setCover] = useState("");
   const [place, setPlace] = useState("");
   const [error, setError] = useState("");
+  const [suggestions, setSuggestions] = useState<ApiActivity[]>([]);
 
   useEffect(() => {
-    api.cities().then(({ cities: nextCities }) => {
-      setCities(nextCities);
-      if (nextCities[0]) setPlace(String(nextCities[0].cityId));
+    Promise.all([api.cities(), api.activities("?maxCost=10000")]).then(([cityResponse, activityResponse]) => {
+      setCities(cityResponse.cities);
+      setSuggestions(activityResponse.activities.slice(0, 6));
+      if (cityResponse.cities[0]) setPlace(String(cityResponse.cities[0].cityId));
     }).catch((requestError) => {
       setError(requestError instanceof Error ? requestError.message : "Could not load cities.");
     });
@@ -112,12 +113,12 @@ export function CreateTripPage({ user }: { user: User }) {
 
       <h2 className="suggestions-title">Suggestions for places to visit / activities</h2>
       <div className="grid suggestion-grid">
-        {db.activities().slice(0, 6).map((a) => (
-          <TiltCard key={a.activity_id} onClick={() => navigate(`/search?q=${encodeURIComponent(a.activity_name)}`)}>
-            <img className="cover" src={a.image} alt="" />
+        {suggestions.map((a) => (
+          <TiltCard key={a.activityId} onClick={() => navigate(`/search?tab=activities&q=${encodeURIComponent(a.activityName)}`)}>
+            <img className="cover" src="https://images.unsplash.com/photo-1500534623283-312aade485b7?auto=format&fit=crop&w=800&q=80" alt="" />
             <div className="body">
-              <strong>{a.activity_name}</strong>
-              <div className="muted">{a.type} · {db.city(a.city_id)?.city_name}</div>
+              <strong>{a.activityName}</strong>
+              <div className="muted">{a.type} · {a.city?.cityName || ""}</div>
             </div>
           </TiltCard>
         ))}

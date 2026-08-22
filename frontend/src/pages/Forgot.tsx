@@ -1,18 +1,14 @@
 import { FormEvent, useState } from "react";
 import { Link } from "react-router-dom";
-import { db } from "../db";
 
 export function ForgotPage() {
   const [msg, setMsg] = useState("");
   const onSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const email = String(new FormData(e.currentTarget).get("email") || "");
-    const found = db.all().users.find((u) => u.email.toLowerCase() === email.toLowerCase());
-    setMsg(
-      found
-        ? `A reset note would be sent to ${found.email}. For this demo, sign in with your existing password.`
-        : "No account uses that email.",
-    );
+    const email = String(new FormData(e.currentTarget).get("email") || "").trim();
+    if (email) {
+      setMsg(`If an account exists for ${email}, a password reset link has been requested.`);
+    }
   };
   return (
     <div className="auth-panel" style={{ minHeight: "100vh" }}>

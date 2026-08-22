@@ -22,6 +22,7 @@ export async function getTripBudget(req, res) {
   const byType = {};
   const byCategory = {};
   let total = 0;
+  let plannedBudget = 0;
   const bySection = trip.sections.map((section) => {
     const sectionTotal = section.sectionActivities.reduce((sum, item) => {
       const expense = Number(item.expense || 0);
@@ -32,12 +33,16 @@ export async function getTripBudget(req, res) {
       byCategory[category] = (byCategory[category] || 0) + expense;
       return sum + expense;
     }, 0);
+    const sectionBudget = section.budget === null ? null : Number(section.budget);
+    if (sectionBudget !== null) plannedBudget += sectionBudget;
 
     return {
       sectionId: section.sectionId,
       city: section.city,
-      budget: section.budget ? Number(section.budget) : null,
+      budget: sectionBudget,
       activityTotal: sectionTotal,
+      remainingBudget: sectionBudget === null ? null : sectionBudget - sectionTotal,
+      isOverBudget: sectionBudget !== null && sectionTotal > sectionBudget,
     };
   });
 
@@ -47,6 +52,9 @@ export async function getTripBudget(req, res) {
     byType,
     byCategory,
     bySection,
+    plannedBudget,
+    remainingBudget: plannedBudget - total,
+    isOverBudget: plannedBudget > 0 && total > plannedBudget,
     averagePerDay: trip.startDate && trip.endDate
       ? total / (Math.floor((new Date(trip.endDate) - new Date(trip.startDate)) / 86400000) + 1)
       : null,

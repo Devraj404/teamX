@@ -1,7 +1,6 @@
 import { FormEvent, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Globe } from "../components/Globe";
-import { db } from "../db";
 import { api, saveToken } from "../api";
 
 export function RegisterPage() {
