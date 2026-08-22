@@ -46,10 +46,10 @@ img { max-width: 100%; display: block; }
   top: 0;
   z-index: 20;
   display: grid;
-  grid-template-columns: 180px 1fr auto;
+  grid-template-columns: auto 1fr auto;
   gap: 16px;
   align-items: center;
-  padding: 16px 28px;
+  padding: 14px 28px;
   background: rgba(255, 253, 248, 0.82);
   backdrop-filter: blur(18px);
   border-bottom: 1px solid var(--line);
@@ -458,37 +458,177 @@ textarea { min-height: 96px; resize: vertical; }
 .suggestions-title { margin-top: 42px; text-align: center; }
 .suggestion-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: 14px; }
 
+/* Responsive Topbar Header & Navigation */
+.topbar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+.topbar-user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .route-transition { transform: none !important; }
 }
 
+/* Mobile & Small Tablet Breakpoint (<= 900px) */
 @media (max-width: 900px) {
-  .auth-wrap { grid-template-columns: 1fr; }
-  .auth-visual {
-    min-height: 360px;
-    border-right: 0;
-    border-bottom: 1px solid var(--line);
+  .auth-wrap {
+    grid-template-columns: 1fr;
+    min-height: 100vh;
   }
-  .auth-panel { align-items: flex-start; padding: 32px 24px 48px; }
-  .auth-globe { top: 1rem; width: min(76vw, 360px); }
-  .auth-copy { margin: 0 24px 28px; padding-top: 0; }
-  .auth-copy h1 { font-size: clamp(34px, 10vw, 48px); }
-  .topbar { grid-template-columns: 1fr; }
-  .topbar { padding: 12px 16px; gap: 10px; }
-  .search-cluster { flex-wrap: wrap; width: 100%; }
-  .search-cluster input { min-width: 0; flex: 1 1 180px; }
-  .nav-links { flex-wrap: wrap; gap: 4px; }
-  .nav-links a { padding: 7px 9px; }
-  .list-card, .timeline-row, .feed-card, .charts { grid-template-columns: 1fr; }
-  .two { grid-template-columns: 1fr; }
-  .trip-form { width: 100%; }
-  .trip-cover-preview { width: 100%; }
-  .suggestion-grid, .home-stats { grid-template-columns: 1fr; }
-  .personal-activity { grid-template-columns: 1fr; }
-  .destination-carousel { height: 320px; transform: none; }
-  .destination-carousel .overlay { max-width: none; padding: 22px; }
-  .destination-carousel .overlay > * { max-width: 100%; }
-  .destination-carousel .overlay h1 { font-size: clamp(34px, 10vw, 48px); }
-  .page { padding: 20px 16px 32px; }
-  input, textarea, select { font-size: 16px; }
+  .auth-visual {
+    display: none; /* Hide heavy 3D globe hero on mobile to focus directly on login/register form */
+  }
+  .auth-panel {
+    align-items: center;
+    justify-content: center;
+    padding: 32px 20px 48px;
+    min-height: 100vh;
+  }
+  .form {
+    width: 100%;
+    max-width: 440px;
+  }
+  .topbar {
+    display: flex;
+    flex-direction: column;
+    padding: 12px 16px;
+    gap: 12px;
+  }
+  .search-cluster {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+  .search-cluster input {
+    width: 100%;
+    flex: 1 1 100%;
+    font-size: 15px;
+  }
+  .nav-links {
+    display: flex;
+    overflow-x: auto;
+    width: 100%;
+    padding-bottom: 4px;
+    gap: 6px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .nav-links::-webkit-scrollbar { display: none; }
+  .nav-links a {
+    white-space: nowrap;
+    padding: 6px 12px;
+    font-size: 13px;
+  }
+  .page {
+    padding: 16px 12px 32px;
+  }
+  h1 {
+    font-size: clamp(26px, 7vw, 40px);
+  }
+  h2 {
+    font-size: 22px;
+  }
+  .destination-carousel {
+    height: 250px;
+    transform: none;
+    border-radius: 16px;
+  }
+  .destination-carousel .overlay {
+    padding: 18px;
+  }
+  .destination-carousel .overlay h1 {
+    font-size: clamp(22px, 6vw, 32px);
+  }
+  .home-stats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .home-stats article {
+    padding: 10px 8px;
+    text-align: center;
+  }
+  .home-stats strong {
+    font-size: 20px;
+  }
+  .home-stats span {
+    font-size: 11px;
+  }
+  .list-card {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding: 12px;
+  }
+  .list-card img {
+    width: 100%;
+    height: 160px;
+    border-radius: 12px;
+  }
+  .two {
+    grid-template-columns: 1fr;
+  }
+  .trip-form {
+    width: 100%;
+  }
+  .trip-cover-preview {
+    width: 100%;
+  }
+  .suggestion-grid {
+    grid-template-columns: 1fr;
+  }
+  .personal-activity {
+    grid-template-columns: 1fr;
+  }
+  .charts {
+    grid-template-columns: 1fr;
+  }
+  .cal-grid {
+    gap: 4px;
+  }
+  .cal-cell {
+    min-height: 52px;
+    padding: 4px;
+    font-size: 10px;
+    border-radius: 8px;
+  }
+  .bar {
+    margin-top: 2px;
+    padding: 2px 4px;
+    font-size: 9px;
+  }
+  .feed-card {
+    grid-template-columns: 48px 1fr;
+    gap: 12px;
+    padding: 14px;
+  }
+  .fab {
+    right: 16px;
+    bottom: 16px;
+    padding: 12px 18px;
+    font-size: 14px;
+  }
+  input, textarea, select {
+    font-size: 16px;
+  }
+}
+
+/* Extra Small Phones (<= 480px) */
+@media (max-width: 480px) {
+  .home-stats {
+    grid-template-columns: 1fr;
+  }
+  .home-stats article {
+    padding: 12px 16px;
+    text-align: left;
+  }
+  .home-stats strong {
+    font-size: 24px;
+  }
+  .home-stats span {
+    font-size: 12px;
+  }
 }

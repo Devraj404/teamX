@@ -13,9 +13,12 @@ export function Shell({
   return (
     <div className="app-shell">
       <header className="topbar">
+        {/* Brand */}
         <div className="brand" onClick={() => navigate("/")} style={{ cursor: "pointer" }}>
           GlobeTrotter
         </div>
+
+        {/* Search bar — centre */}
         <form
           className="search-cluster"
           onSubmit={(e) => {
@@ -25,16 +28,9 @@ export function Shell({
           }}
         >
           <input name="q" placeholder="Search cities, activities, trips…" />
-          <button className="chip" type="button" onClick={() => navigate("/search?tab=cities&group=region")}>
-            Group by
-          </button>
-          <button className="chip" type="button" onClick={() => navigate("/search?tab=cities&filter=popular")}>
-            Filter
-          </button>
-          <button className="chip" type="button" onClick={() => navigate("/search?tab=cities&sort=cost")}>
-            Sort by
-          </button>
         </form>
+
+        {/* Right-side: nav links + avatar + logout */}
         <nav className="nav-links">
           <NavLink to="/">Home</NavLink>
           <NavLink to="/trips">Trips</NavLink>

@@ -14,7 +14,7 @@ const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 
-// Enable permissive CORS for all origins, methods, and headers
+// Permissive CORS for all origins, methods, and headers
 app.use(
   cors({
     origin: "*",
