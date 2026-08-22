@@ -20,5 +20,102 @@ model User {
   country               String? @db.VarChar(100)
   additionalInformation String? @map("additional_information") @db.Text
 
+  trips Trip[]
+  posts CommunityPost[]
+
   @@map("user")
+}
+
+model City {
+  cityId      Int        @id @default(autoincrement()) @map("city_id")
+  cityName    String     @map("city_name") @db.VarChar(150)
+  country     String?    @db.VarChar(100)
+  region      String?    @db.VarChar(100)
+  costIndex   Decimal?   @map("cost_index") @db.Decimal(5, 2)
+  popularity  Int?
+
+  activities Activity[]
+  sections   TripSection[]
+
+  @@map("cities")
+}
+
+model Activity {
+  activityId   Int               @id @default(autoincrement()) @map("activity_id")
+  cityId       Int               @map("city_id")
+  activityName String            @map("activity_name") @db.VarChar(200)
+  type         String            @db.VarChar(30)
+  cost         Decimal?          @db.Decimal(12, 2)
+  duration     Int?
+  description  String?           @db.Text
+
+  city             City              @relation(fields: [cityId], references: [cityId], onDelete: Cascade)
+  sectionActivities SectionActivity[]
+
+  @@index([cityId])
+  @@map("activities")
+}
+
+model Trip {
+  tripId      Int          @id @default(autoincrement()) @map("trip_id")
+  userId      Int          @map("user_id")
+  tripName    String       @map("trip_name") @db.VarChar(200)
+  description String?      @db.Text
+  startDate   DateTime?    @map("start_date") @db.Date
+  endDate     DateTime?    @map("end_date") @db.Date
+  coverPhoto  String?      @map("cover_photo") @db.Text
+  isPublic    Boolean      @default(false) @map("is_public")
+
+  user     User         @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  sections TripSection[]
+
+  @@index([userId])
+  @@map("trips")
+}
+
+model TripSection {
+  sectionId    Int               @id @default(autoincrement()) @map("section_id")
+  tripId       Int               @map("trip_id")
+  cityId       Int               @map("city_id")
+  sectionOrder Int               @map("section_order")
+  description  String?           @db.Text
+  startDate    DateTime?         @map("start_date") @db.Date
+  endDate      DateTime?         @map("end_date") @db.Date
+  budget       Decimal?          @db.Decimal(12, 2)
+
+  trip             Trip              @relation(fields: [tripId], references: [tripId], onDelete: Cascade)
+  city             City              @relation(fields: [cityId], references: [cityId])
+  sectionActivities SectionActivity[]
+
+  @@unique([tripId, sectionOrder])
+  @@index([cityId])
+  @@map("trip_sections")
+}
+
+model SectionActivity {
+  sectionActivityId Int       @id @default(autoincrement()) @map("section_activity_id")
+  sectionId         Int       @map("section_id")
+  activityId        Int?      @map("activity_id")
+  activityDate      DateTime? @map("activity_date") @db.Date
+  activityName      String?   @map("activity_name") @db.VarChar(200)
+  expense           Decimal?  @db.Decimal(12, 2)
+
+  section  TripSection @relation(fields: [sectionId], references: [sectionId], onDelete: Cascade)
+  activity Activity?   @relation(fields: [activityId], references: [activityId], onDelete: SetNull)
+
+  @@index([sectionId])
+  @@index([activityId])
+  @@map("section_activities")
+}
+
+model CommunityPost {
+  postId    Int      @id @default(autoincrement()) @map("post_id")
+  userId    Int      @map("user_id")
+  content   String   @db.Text
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [userId], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("community_posts")
 }

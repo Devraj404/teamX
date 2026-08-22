@@ -3,6 +3,8 @@ import express from "express";
 import morgan from "morgan";
 import cors from "cors";
 import authRoutes from "./routes/authRoutes.js";
+import cityRoutes from "./routes/cityRoutes.js";
+import tripRoutes from "./routes/tripRoutes.js";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -16,6 +18,8 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api/auth", authRoutes);
+app.use("/api/cities", cityRoutes);
+app.use("/api/trips", tripRoutes);
 
 app.use((req, res) => {
   res.status(404).json({ message: "Route not found" });
