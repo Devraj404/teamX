@@ -12,7 +12,7 @@
 - **ORM**: Prisma ORM
 - **Authentication**: JWT (JSON Web Tokens) with `Authorization: Bearer <token>`
 - **Security**: `bcryptjs` password hashing, `express-validator` input sanitization
-- **Port**: `3000`
+- **Port**: `5000`
 
 ### **Frontend**
 - **Framework**: React 19 + TypeScript + Vite
