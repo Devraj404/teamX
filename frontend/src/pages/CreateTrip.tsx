@@ -1,39 +1,52 @@
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Page3D, TiltCard } from "../components/Motion";
 import { db } from "../db";
+import { api, type ApiCity } from "../api";
 import type { User } from "../types";
 
 export function CreateTripPage({ user }: { user: User }) {
   const navigate = useNavigate();
-  const cities = db.cities();
-  const [cover, setCover] = useState(cities[0]?.image || "");
-  const [place, setPlace] = useState(String(cities[0]?.city_id || ""));
+  const [cities, setCities] = useState<ApiCity[]>([]);
+  const [cover, setCover] = useState("");
+  const [place, setPlace] = useState("");
+  const [error, setError] = useState("");
 
-  const onSubmit = (e: FormEvent<HTMLFormElement>) => {
+  useEffect(() => {
+    api.cities().then(({ cities: nextCities }) => {
+      setCities(nextCities);
+      if (nextCities[0]) setPlace(String(nextCities[0].cityId));
+    }).catch((requestError) => {
+      setError(requestError instanceof Error ? requestError.message : "Could not load cities.");
+    });
+  }, []);
+
+  const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const f = new FormData(e.currentTarget);
-    const trip = db.saveTrip({
-      user_id: user.user_id,
-      trip_name: String(f.get("trip_name") || "Untitled trip"),
-      description: String(f.get("description") || ""),
-      start_date: String(f.get("start_date") || ""),
-      end_date: String(f.get("end_date") || ""),
-      cover_photo: cover,
-    });
-    const city = db.city(Number(place));
-    if (city) {
-      db.saveSection({
-        trip_id: trip.trip_id,
-        section_order: 1,
-        description: `${city.city_name} — first stop.`,
-        start_date: trip.start_date,
-        end_date: trip.end_date,
-        budget: 0,
-        city_id: city.city_id,
+    try {
+      const { trip } = await api.createTrip({
+        tripName: String(f.get("trip_name") || "Untitled trip"),
+        description: String(f.get("description") || ""),
+        startDate: String(f.get("start_date") || ""),
+        endDate: String(f.get("end_date") || ""),
+        coverPhoto: cover || null,
       });
+      const city = cities.find((item) => item.cityId === Number(place));
+      if (city) {
+        await api.createSection(trip.tripId, {
+          cityId: city.cityId,
+          sectionOrder: 1,
+          description: `${city.cityName} - first stop.`,
+          startDate: trip.startDate,
+          endDate: trip.endDate,
+          budget: 0,
+        });
+      }
+      navigate(`/trips/${trip.tripId}/build`);
+    } catch (requestError) {
+      setError(requestError instanceof Error ? requestError.message : "Could not create trip.");
     }
-    navigate(`/trips/${trip.trip_id}/build`);
   };
 
   return (
@@ -53,16 +66,16 @@ export function CreateTripPage({ user }: { user: User }) {
           Select a place
           <select name="place" value={place} onChange={(e) => {
             setPlace(e.target.value);
-            const city = db.city(Number(e.target.value));
-            if (city) setCover(city.image);
+            setCover("");
           }}>
             {cities.map((c) => (
-              <option key={c.city_id} value={c.city_id}>
-                {c.city_name}, {c.country}
+              <option key={c.cityId} value={c.cityId}>
+                {c.cityName}, {c.country}
               </option>
             ))}
           </select>
         </label>
+        {error && <div className="alert full-span">{error}</div>}
         <div className="two full-span">
           <label>
             Start date

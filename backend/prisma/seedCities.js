@@ -1,0 +1,100 @@
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
+
+const data = [
+  {
+    state: "Rajasthan",
+    cities: [
+      { name: "Jaipur", costIndex: 3.5, popularity: 95, activities: [{ name: "Amber Fort Visit", type: "sightseeing", estimatedCost: 500, description: "Historic hilltop fort with palace courtyards and panoramic views." }, { name: "Hawa Mahal Tour", type: "sightseeing", estimatedCost: 200, description: "Visit Jaipur's iconic pink palace facade and old-city market area." }, { name: "Chokhi Dhani Cultural Dinner", type: "food", estimatedCost: 900, description: "Enjoy a traditional Rajasthani village-themed dinner and performances." }, { name: "Hot Air Balloon Ride", type: "adventure", estimatedCost: 8500, description: "Take a sunrise balloon ride over Jaipur's forts and countryside." }] },
+      { name: "Udaipur", costIndex: 3.8, popularity: 90, activities: [{ name: "Lake Pichola Boat Ride", type: "sightseeing", estimatedCost: 600, description: "Take an evening boat ride with views of Udaipur's lakeside palaces." }, { name: "City Palace Tour", type: "sightseeing", estimatedCost: 300, description: "Explore the large palace complex overlooking Lake Pichola." }, { name: "Rooftop Dinner at Ambrai Ghat", type: "food", estimatedCost: 1200, description: "Enjoy lakeside dining with views of the City Palace." }] },
+      { name: "Jodhpur", costIndex: 3.2, popularity: 82, activities: [{ name: "Mehrangarh Fort Visit", type: "sightseeing", estimatedCost: 400, description: "Explore one of India's largest forts above the Blue City." }, { name: "Blue City Walking Tour", type: "sightseeing", estimatedCost: 350, description: "Walk through the old blue-painted neighborhoods of Jodhpur." }, { name: "Desert Safari (Osian)", type: "adventure", estimatedCost: 2000, description: "Take a camel safari near the sand dunes of Osian." }] },
+    ],
+  },
+  {
+    state: "Kerala",
+    cities: [
+      { name: "Kochi", costIndex: 3.0, popularity: 85, activities: [{ name: "Fort Kochi Walking Tour", type: "sightseeing", estimatedCost: 300, description: "Explore colonial architecture, heritage streets, and Chinese fishing nets." }, { name: "Kathakali Dance Show", type: "other", estimatedCost: 400, description: "Watch Kerala's traditional dance-drama and elaborate costume performance." }, { name: "Seafood Trail", type: "food", estimatedCost: 700, description: "Taste fresh seafood and local coastal dishes around Fort Kochi." }] },
+      { name: "Munnar", costIndex: 2.8, popularity: 88, activities: [{ name: "Tea Plantation Tour", type: "sightseeing", estimatedCost: 350, description: "Walk through Munnar's tea estates and learn about tea production." }, { name: "Eravikulam National Park Visit", type: "sightseeing", estimatedCost: 500, description: "Visit the wildlife sanctuary known for Nilgiri tahr and mountain scenery." }, { name: "Trekking at Top Station", type: "adventure", estimatedCost: 800, description: "Take a scenic trek with views across the Western Ghats valleys." }] },
+      { name: "Alleppey", costIndex: 3.1, popularity: 90, activities: [{ name: "Houseboat Backwater Cruise", type: "sightseeing", estimatedCost: 4500, description: "Cruise Kerala's backwaters and stay overnight on a traditional houseboat." }, { name: "Village Canoe Tour", type: "adventure", estimatedCost: 600, description: "Paddle through narrow backwater canals and village waterways." }, { name: "Toddy and Local Cuisine Tasting", type: "food", estimatedCost: 500, description: "Try regional Kerala dishes at a traditional toddy shop." }] },
+    ],
+  },
+  {
+    state: "Goa",
+    cities: [
+      { name: "North Goa", costIndex: 3.6, popularity: 92, activities: [{ name: "Baga Beach Water Sports", type: "adventure", estimatedCost: 1500, description: "Try jet ski, parasailing, and banana boat rides at Baga Beach." }, { name: "Anjuna Flea Market Visit", type: "sightseeing", estimatedCost: 0, description: "Browse the famous flea market and local craft stalls." }, { name: "Beach Shack Dinner", type: "food", estimatedCost: 1000, description: "Enjoy a seafood dinner at a seasonal beach shack." }] },
+      { name: "South Goa", costIndex: 3.4, popularity: 80, activities: [{ name: "Palolem Beach Kayaking", type: "adventure", estimatedCost: 700, description: "Kayak through the calm waters of Palolem Bay." }, { name: "Cabo de Rama Fort Visit", type: "sightseeing", estimatedCost: 100, description: "Visit the cliffside fort and its ocean viewpoints." }] },
+      { name: "Panaji", costIndex: 3.3, popularity: 75, activities: [{ name: "Fontainhas Latin Quarter Walk", type: "sightseeing", estimatedCost: 200, description: "Walk through Panaji's colorful Portuguese-era streets." }, { name: "Mandovi River Cruise", type: "sightseeing", estimatedCost: 600, description: "Take an evening cruise on the Mandovi River with live music." }] },
+    ],
+  },
+  {
+    state: "Maharashtra",
+    cities: [
+      { name: "Mumbai", costIndex: 4.5, popularity: 96, activities: [{ name: "Gateway of India and Colaba Walk", type: "sightseeing", estimatedCost: 0, description: "Visit Mumbai's iconic waterfront monument and nearby market streets." }, { name: "Elephanta Caves Ferry Tour", type: "sightseeing", estimatedCost: 1200, description: "Take a ferry to the ancient rock-cut caves on Elephanta Island." }, { name: "Street Food Trail (Mohammed Ali Road)", type: "food", estimatedCost: 500, description: "Taste famous Mumbai street food around Mohammed Ali Road." }] },
+      { name: "Pune", costIndex: 3.2, popularity: 78, activities: [{ name: "Shaniwar Wada Fort Visit", type: "sightseeing", estimatedCost: 250, description: "Explore the historic Peshwa-era fortification in central Pune." }, { name: "Sinhagad Fort Trek", type: "adventure", estimatedCost: 300, description: "Hike to the popular hill fort and enjoy views near Pune." }] },
+      { name: "Lonavala", costIndex: 3.0, popularity: 83, activities: [{ name: "Tiger's Point Sunrise Trek", type: "adventure", estimatedCost: 400, description: "Take a scenic trek to a well-known Lonavala viewpoint." }, { name: "Bhushi Dam Visit", type: "sightseeing", estimatedCost: 100, description: "Visit the popular monsoon waterfall and picnic spot." }, { name: "Local Chikki Tasting Tour", type: "food", estimatedCost: 200, description: "Taste Lonavala's famous nut-and-jaggery chikki sweet." }] },
+    ],
+  },
+];
+
+async function main() {
+  let cityCount = 0;
+  let activityCount = 0;
+
+  for (const stateGroup of data) {
+    for (const cityData of stateGroup.cities) {
+      const existingCity = await prisma.city.findFirst({
+        where: { cityName: cityData.name, country: "India" },
+      });
+      const city = existingCity
+        ? await prisma.city.update({
+            where: { cityId: existingCity.cityId },
+            data: {
+              region: stateGroup.state,
+              costIndex: cityData.costIndex,
+              popularity: cityData.popularity,
+            },
+          })
+        : await prisma.city.create({
+            data: {
+              cityName: cityData.name,
+              region: stateGroup.state,
+              country: "India",
+              costIndex: cityData.costIndex,
+              popularity: cityData.popularity,
+            },
+          });
+      cityCount += 1;
+
+      for (const activity of cityData.activities) {
+        const existingActivity = await prisma.activity.findFirst({
+          where: { cityId: city.cityId, activityName: activity.name },
+        });
+        const activityData = {
+          activityName: activity.name,
+          type: activity.type,
+          cost: activity.estimatedCost,
+          description: activity.description,
+          cityId: city.cityId,
+        };
+        if (existingActivity) {
+          await prisma.activity.update({ where: { activityId: existingActivity.activityId }, data: activityData });
+        } else {
+          await prisma.activity.create({ data: activityData });
+        }
+        activityCount += 1;
+      }
+    }
+  }
+
+  console.log(`Seed complete: ${cityCount} Indian cities and ${activityCount} catalog activities.`);
+}
+
+main()
+  .catch((error) => {
+    console.error(error);
+    process.exitCode = 1;
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+  });

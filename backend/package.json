@@ -12,6 +12,7 @@
     "db:studio": "prisma studio",
     "db:generate": "prisma generate",
     "db:seed": "prisma db seed"
+    ,"db:seed:cities": "node prisma/seedCities.js"
   },
   "keywords": [],
   "author": "",

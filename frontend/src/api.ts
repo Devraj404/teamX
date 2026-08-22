@@ -14,6 +14,69 @@ export type ApiUser = {
   additionalInformation: string | null;
 };
 
+export type ApiCity = {
+  cityId: number;
+  cityName: string;
+  country: string | null;
+  region: string | null;
+  costIndex: string | number | null;
+  popularity: number | null;
+};
+
+export type ApiTrip = {
+  tripId: number;
+  userId: number;
+  tripName: string;
+  description: string | null;
+  startDate: string | null;
+  endDate: string | null;
+  coverPhoto: string | null;
+  isPublic: boolean;
+  status: "upcoming" | "ongoing" | "completed";
+  sections: ApiSection[];
+};
+
+export type ApiSection = {
+  sectionId: number;
+  tripId: number;
+  cityId: number;
+  sectionOrder: number;
+  description: string | null;
+  startDate: string | null;
+  endDate: string | null;
+  budget: string | number | null;
+  city?: ApiCity;
+  sectionActivities?: Array<{
+    sectionActivityId: number;
+    activityId?: number | null;
+    activityName: string | null;
+    activityDate: string | null;
+    expense: string | number | null;
+    expenseCategory?: string;
+    activity?: ApiActivity;
+  }>;
+};
+
+export type ApiActivity = {
+  activityId: number;
+  cityId: number;
+  activityName: string;
+  type: string;
+  cost: string | number | null;
+  duration: number | null;
+  description: string | null;
+  city?: ApiCity;
+};
+
+export type ApiBudget = {
+  tripId: number;
+  total: number;
+  byType: Record<string, number>;
+  byCategory: Record<string, number>;
+  averagePerDay: number | null;
+  bySection: Array<{ sectionId: number; city: ApiCity; budget: number | null; activityTotal: number }>;
+};
+
 type ApiOptions = RequestInit & { auth?: boolean };
 
 async function request<T>(path: string, options: ApiOptions = {}): Promise<T> {
@@ -60,6 +123,40 @@ export const api = {
       body: JSON.stringify(payload),
     }),
   me: () => request<{ user: ApiUser }>("/auth/me", { auth: true }),
+  cities: () => request<{ cities: ApiCity[] }>("/cities"),
+  trips: () => request<{ trips: ApiTrip[] }>("/trips", { auth: true }),
+  trip: (tripId: number) => request<{ trip: ApiTrip }>(`/trips/${tripId}`, { auth: true }),
+  createTrip: (payload: Record<string, unknown>) =>
+    request<{ trip: ApiTrip }>("/trips", {
+      method: "POST",
+      auth: true,
+      body: JSON.stringify(payload),
+    }),
+  createSection: (tripId: number, payload: Record<string, unknown>) =>
+    request<{ section: ApiSection }>(`/trips/${tripId}/sections`, {
+      method: "POST",
+      auth: true,
+      body: JSON.stringify(payload),
+    }),
+  updateSection: (tripId: number, sectionId: number, payload: Record<string, unknown>) =>
+    request<{ section: ApiSection }>(`/trips/${tripId}/sections/${sectionId}`, {
+      method: "PATCH",
+      auth: true,
+      body: JSON.stringify(payload),
+    }),
+  deleteSection: (tripId: number, sectionId: number) =>
+    request<void>(`/trips/${tripId}/sections/${sectionId}`, { method: "DELETE", auth: true }),
+  activities: (query = "") => request<{ activities: ApiActivity[] }>(`/activities${query}`),
+  createSectionActivity: (tripId: number, sectionId: number, payload: Record<string, unknown>) =>
+    request<{ activity: ApiSection["sectionActivities"] extends Array<infer Item> ? Item : never }>(`/trips/${tripId}/sections/${sectionId}/activities`, {
+      method: "POST",
+      auth: true,
+      body: JSON.stringify(payload),
+    }),
+  getBudget: (tripId: number) => request<ApiBudget>(`/trips/${tripId}/budget`, { auth: true }),
+  publicTrip: (tripId: number) => request<{ trip: ApiTrip }>(`/public/trips/${tripId}`),
+  deleteTrip: (tripId: number) =>
+    request<void>(`/trips/${tripId}`, { method: "DELETE", auth: true }),
   logout: () => {
     api.clearToken();
     window.dispatchEvent(new Event("globetrotter-auth-changed"));

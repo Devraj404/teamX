@@ -54,10 +54,15 @@ npm run db:up
 npm run db:migrate
 npm run db:generate
 npm run db:seed
+npm run db:seed:cities
 npm run db:studio
 ```
 
 `db:up` starts the local PostgreSQL container. `db:migrate` applies Prisma migrations. `db:seed` adds repeatable sample cities and activities. Prisma Studio opens a browser database viewer, normally at `http://localhost:5555`.
+
+`db:seed:cities` adds ten repeatable Indian cities and their city-linked famous places/experiences as catalog activities. It does not create or modify trips, itinerary sections, or section activities.
+
+The Ahmedabad catalog is based on landmark listings from [Gujarat Tourism](https://www.gujarattourism.com/central-zone/ahmedabad.html), including Sabarmati Ashram, Sabarmati Riverfront, the Heritage Walk, Hutheesing Jain Temple, Kankaria Lake, Manek Chowk, and Adalaj Ni Vav. Prices in seed data are planning estimates, not live ticket prices.
 
 To stop the local database:
 
