@@ -4,6 +4,31 @@
 
 ---
 
+## 📸 Screenshots
+
+### Login Page
+<img width="1600" height="807" alt="image" src="https://github.com/user-attachments/assets/7aa6dc07-48ec-49b5-a26e-0458684a8fad" />
+
+### Home Page
+<img width="1600" height="812" alt="image" src="https://github.com/user-attachments/assets/c5705729-1fff-437d-8af7-c228b1713973" />
+
+
+### Trips Page
+<img width="1600" height="809" alt="image" src="https://github.com/user-attachments/assets/ffe118a6-a0c0-473d-98dd-25b72fa895bf" />
+
+
+### Community Page
+<img width="1600" height="813" alt="image" src="https://github.com/user-attachments/assets/b1ca3a95-3169-4390-9db1-b0207291cd9c" />
+
+
+### Calendar Page
+<img width="1600" height="807" alt="image" src="https://github.com/user-attachments/assets/3acd102b-2100-461a-941b-913f4111b2af" />
+
+
+### Profile Page
+<img width="1600" height="812" alt="image" src="https://github.com/user-attachments/assets/a0d23fad-c655-48bf-9543-dd281eb87e34" />
+---
+
 ## 🚀 Tech Stack
 
 ### **Backend**
