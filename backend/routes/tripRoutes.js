@@ -13,6 +13,7 @@ import {
   tripIdValidator,
   updateTripValidator,
 } from "../validators/tripValidators.js";
+import sectionRoutes from "./sectionRoutes.js";
 
 const router = Router();
 
@@ -22,5 +23,6 @@ router.post("/", createTripValidator, validate, createTrip);
 router.get("/:tripId", tripIdValidator, validate, getTrip);
 router.patch("/:tripId", tripIdValidator, updateTripValidator, validate, updateTrip);
 router.delete("/:tripId", tripIdValidator, validate, deleteTrip);
+router.use("/:tripId/sections", sectionRoutes);
 
 export default router;
