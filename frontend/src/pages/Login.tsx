@@ -16,7 +16,8 @@ export function LoginPage() {
       setError("Enter both username and password.");
       return;
     }
-    const user = db.login(username, password);
+    const remember = form.get("remember") === "on";
+    const user = db.login(username, password, remember);
     if (!user) {
       setError("Those credentials do not match an account.");
       return;
@@ -27,26 +28,37 @@ export function LoginPage() {
   return (
     <div className="auth-wrap">
       <div className="auth-visual">
-        <Globe />
-        <div className="overlay" style={{ position: "absolute", bottom: 32, left: 32, right: 32 }}>
+        <Globe className="auth-globe" />
+        <div className="auth-copy">
           <h1>Dream, design, and go.</h1>
           <p className="muted">A quiet studio for multi-city travel — itineraries, budgets, and shared plans.</p>
         </div>
       </div>
       <div className="auth-panel">
         <form className="form" onSubmit={onSubmit}>
-          <div className="photo-orb">GT</div>
+          <div className="photo-orb brand-orb" aria-label="Globetrotter">
+            <Globe />
+          </div>
           <h2>Welcome back</h2>
           <p className="muted">Username and password to open your trips.</p>
           <label>
-            Username
-            <input name="username" autoComplete="username" placeholder="aanya" />
+            Email or username
+            <input
+              name="username"
+              autoComplete="username"
+              defaultValue={db.rememberedUsername()}
+              placeholder="aanya or aanya@example.com"
+            />
           </label>
           <label>
             Password
             <input name="password" type="password" autoComplete="current-password" placeholder="travel123" />
           </label>
           {error && <div className="alert">{error}</div>}
+          <label className="remember-control">
+            <input name="remember" type="checkbox" defaultChecked={Boolean(db.rememberedUsername())} />
+            <span>Remember me on this device</span>
+          </label>
           <button className="btn" type="submit">
             Login
           </button>

@@ -15,6 +15,8 @@ export function SearchPage() {
   const sectionId = Number(params.get("section") || 0);
   const [type, setType] = useState("all");
   const [maxCost, setMaxCost] = useState(200);
+  const [region, setRegion] = useState("all");
+  const regions = [...new Set(db.cities().map((city) => city.region))].sort();
 
   const cities = useMemo(() => {
     let list = db.cities().filter(
@@ -25,6 +27,7 @@ export function SearchPage() {
         c.region.toLowerCase().includes(q),
     );
     if (filter === "popular") list = list.filter((c) => c.popularity >= 88);
+    if (region !== "all") list = list.filter((c) => c.region === region);
     if (sort === "cost") list = [...list].sort((a, b) => a.cost_index - b.cost_index);
     else list = [...list].sort((a, b) => b.popularity - a.popularity);
     return list;
@@ -111,6 +114,13 @@ export function SearchPage() {
 
       {tab === "cities" ? (
         <div className="grid">
+          <label style={{ maxWidth: 280 }}>
+            Filter by region
+            <select value={region} onChange={(e) => setRegion(e.target.value)}>
+              <option value="all">All regions</option>
+              {regions.map((item) => <option key={item}>{item}</option>)}
+            </select>
+          </label>
           {grouped.map(([label, list]) => (
             <section key={label}>
               {group === "region" && <h3>{label}</h3>}

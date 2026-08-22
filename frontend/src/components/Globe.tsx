@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import * as THREE from "three";
 
 export function Globe({ className = "" }: { className?: string }) {
+  const containerRef = useRef<HTMLDivElement>(null);
   const ref = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -16,9 +17,9 @@ export function Globe({ className = "" }: { className?: string }) {
     const globe = new THREE.Mesh(
       new THREE.SphereGeometry(1, 64, 64),
       new THREE.MeshStandardMaterial({
-        color: 0xcfc8bc,
-        metalness: 0.35,
-        roughness: 0.4,
+        color: 0x4b4338,
+        metalness: 0.2,
+        roughness: 0.48,
         wireframe: true,
       }),
     );
@@ -26,13 +27,13 @@ export function Globe({ className = "" }: { className?: string }) {
 
     const atmosphere = new THREE.Mesh(
       new THREE.SphereGeometry(1.08, 32, 32),
-      new THREE.MeshBasicMaterial({ color: 0x9a958c, transparent: true, opacity: 0.08 }),
+      new THREE.MeshBasicMaterial({ color: 0x8f7d63, transparent: true, opacity: 0.18 }),
     );
     scene.add(atmosphere);
 
     const light = new THREE.DirectionalLight(0xffffff, 1.4);
     light.position.set(2, 1.4, 2);
-    scene.add(light, new THREE.AmbientLight(0x8899aa, 0.5));
+    scene.add(light, new THREE.AmbientLight(0xe9dfcf, 0.8));
 
     const markers = new THREE.Group();
     const spots = [
@@ -44,7 +45,7 @@ export function Globe({ className = "" }: { className?: string }) {
     spots.forEach(([x, y, z]) => {
       const m = new THREE.Mesh(
         new THREE.SphereGeometry(0.035, 12, 12),
-        new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0x888888 }),
+        new THREE.MeshStandardMaterial({ color: 0x8f7255, emissive: 0x241b13, emissiveIntensity: 0.35 }),
       );
       m.position.set(x, y, z).normalize();
       markers.add(m);
@@ -52,14 +53,14 @@ export function Globe({ className = "" }: { className?: string }) {
     scene.add(markers);
 
     const resize = () => {
-      const { clientWidth, clientHeight } = canvas.parentElement ?? canvas;
+      const { clientWidth, clientHeight } = containerRef.current ?? canvas;
       renderer.setSize(clientWidth, clientHeight, false);
       camera.aspect = clientWidth / Math.max(clientHeight, 1);
       camera.updateProjectionMatrix();
     };
     resize();
     const ro = new ResizeObserver(resize);
-    if (canvas.parentElement) ro.observe(canvas.parentElement);
+    if (containerRef.current) ro.observe(containerRef.current);
 
     let frame = 0;
     const tick = () => {
@@ -77,5 +78,9 @@ export function Globe({ className = "" }: { className?: string }) {
     };
   }, []);
 
-  return <canvas ref={ref} className={`globe-canvas ${className}`} />;
+  return (
+    <div ref={containerRef} className={`globe ${className}`} aria-hidden="true">
+      <canvas ref={ref} className="globe-canvas" />
+    </div>
+  );
 }

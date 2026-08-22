@@ -38,14 +38,18 @@ export function CreateTripPage({ user }: { user: User }) {
 
   return (
     <Page3D>
-      <h1>Create a new trip</h1>
-      <p className="muted">Name the journey, pick a first place, and set the window of travel.</p>
-      <form className="form" style={{ marginTop: 24 }} onSubmit={onSubmit}>
-        <label>
+      <section className="create-trip-page">
+      <div className="create-trip-heading">
+        <p className="eyebrow">Step 1 of 2</p>
+        <h1>Create a new trip</h1>
+        <p className="muted">Name the journey, pick a first place, and set the window of travel.</p>
+      </div>
+      <form className="form trip-form" style={{ marginTop: 24 }} onSubmit={onSubmit}>
+        <label className="full-span">
           Trip’s name
           <input name="trip_name" required placeholder="Autumn in three cities" />
         </label>
-        <label>
+        <label className="full-span">
           Select a place
           <select name="place" value={place} onChange={(e) => {
             setPlace(e.target.value);
@@ -59,7 +63,7 @@ export function CreateTripPage({ user }: { user: User }) {
             ))}
           </select>
         </label>
-        <div className="two">
+        <div className="two full-span">
           <label>
             Start date
             <input name="start_date" type="date" required />
@@ -69,11 +73,11 @@ export function CreateTripPage({ user }: { user: User }) {
             <input name="end_date" type="date" required />
           </label>
         </div>
-        <label>
+        <label className="full-span">
           Trip description
           <textarea name="description" placeholder="Pace, companions, must-sees…" />
         </label>
-        <label>
+        <label className="full-span">
           Cover photo (optional)
           <input
             type="file"
@@ -87,14 +91,14 @@ export function CreateTripPage({ user }: { user: User }) {
             }}
           />
         </label>
-        {cover && <img src={cover} alt="" style={{ height: 160, objectFit: "cover", borderRadius: 16 }} />}
-        <button className="btn" type="submit">
+        {cover && <img className="trip-cover-preview full-span" src={cover} alt="Selected trip cover" />}
+        <button className="btn full-span" type="submit">
           Save trip & build itinerary
         </button>
       </form>
 
-      <h2 style={{ marginTop: 36 }}>Suggestions for places to visit / activities</h2>
-      <div className="grid" style={{ gridTemplateColumns: "repeat(3, 1fr)", marginTop: 12 }}>
+      <h2 className="suggestions-title">Suggestions for places to visit / activities</h2>
+      <div className="grid suggestion-grid">
         {db.activities().slice(0, 6).map((a) => (
           <TiltCard key={a.activity_id} onClick={() => navigate(`/search?q=${encodeURIComponent(a.activity_name)}`)}>
             <img className="cover" src={a.image} alt="" />
@@ -105,6 +109,7 @@ export function CreateTripPage({ user }: { user: User }) {
           </TiltCard>
         ))}
       </div>
+      </section>
     </Page3D>
   );
 }
